@@ -1,0 +1,153 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+{{ ansible_managed | comment }}
+
+# =============================================================================
+# Chrony Configuration File (/etc/chrony/chrony.conf)
+# =============================================================================
+# This configuration file is optimized for:
+# - High accuracy time synchronization
+# - Enhanced security measures
+# - System stability and reliability
+# - Comprehensive logging and monitoring
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. NTP Server Configuration
+# -----------------------------------------------------------------------------
+# Define reliable NTP server pools for synchronization
+{% if chrony_ntp_source_mode is defined and chrony_ntp_source_mode == "pool" %}
+{% for server in chrony_ntp_servers %}
+pool {{ server }}
+{% endfor %}
+{% endif %}
+{% if chrony_ntp_source_mode is defined and chrony_ntp_source_mode == "server" %}
+{% for server in chrony_ntp_servers %}
+server {{ server }}
+{% endfor %}
+{% endif %}
+
+# -----------------------------------------------------------------------------
+# 2. System Clock Management
+# -----------------------------------------------------------------------------
+# Path to the drift file for persistent clock correction
+driftfile {{ chrony_driftfile_path }}
+
+{% if chrony_rtcsync_enable %}
+# Synchronize system clock to RTC on boot and periodically
+rtcsync
+{% endif %}
+
+# Correct clock if offset exceeds threshold
+makestep {{ chrony_makestep }}
+
+# Minimum number of sources required for synchronization
+minsources {{ chrony_num_minsources }}
+
+# Maximum allowed update skew (in ppm)
+maxupdateskew {{ chrony_maxupdateskew }}
+
+# Maximum allowed distance to time sources
+maxdistance {{ chrony_maxdistance }}
+
+# -----------------------------------------------------------------------------
+# 3. Security Configuration
+# -----------------------------------------------------------------------------
+# Authentication key file location
+keyfile {{ chrony_keyfile_path }}
+
+# Command key configuration
+commandkey {{ chrony_command_key_id }}
+generatecommandkey
+
+# NTS security configuration
+ntsdumpdir {{ chrony_ntsdumpdir }}
+
+# Restrict network access by default
+{{ chrony_default_access }} all
+
+{% if chrony_ntp_clients is defined and chrony_ntp_clients|length > 0 %}
+# Allow specific trusted clients
+{% for client in chrony_ntp_clients %}
+allow {{ client }}
+{% endfor %}
+{% endif %}
+
+# Serve time even if not synchronized
+local stratum 10
+
+{% if chrony_auth_settings.enable %}
+# Enable NTP authentication
+authselectmode {{ chrony_auth_settings.selectmode }}
+{% endif %}
+
+# -----------------------------------------------------------------------------
+# 4. Leap Second Handling
+# -----------------------------------------------------------------------------
+# Leap second timezone configuration
+leapsectz {{ chrony_leapsectz }}
+
+# Leap second handling mode
+leapsecmode {{ chrony_leapsec_settings.mode }}
+maxslewrate {{ chrony_leapsec_settings.maxslewrate }}
+smoothtime {{ chrony_leapsec_settings.smoothtime }}
+
+# -----------------------------------------------------------------------------
+# 5. Logging and Monitoring
+# -----------------------------------------------------------------------------
+{% if chrony_log_enable %}
+# Enable comprehensive logging
+log {{ chrony_log_options }}
+
+# Log directory location
+logdir {{ chrony_logdir_path }}
+
+# Log clock changes exceeding threshold
+logchange {{ chrony_logchange }}
+{% endif %}
+
+# -----------------------------------------------------------------------------
+# 6. Advanced Tuning
+# -----------------------------------------------------------------------------
+{% if chrony_hardware_settings.enable_hw_timestamp %}
+# Hardware timestamp configuration
+hwtimestamp {{ chrony_hardware_settings.hw_timestamp_interfaces }}
+
+{% if chrony_hardware_settings.refclock_enable %}
+# Reference clock configuration
+refclock PPS {{ chrony_hardware_settings.refclock_pps }} refid PPS precision {{ chrony_hardware_settings.refclock_precision }}
+{% endif %}
+
+# Kernel RTC synchronization
+rtcautotrim {{ chrony_hardware_settings.rtcautotrim }}
+{% endif %}
+
+# -----------------------------------------------------------------------------
+# 7. System Performance
+# -----------------------------------------------------------------------------
+# Clock state directory
+dumpdir {{ chrony_system_settings.dumpdir }}
+
+{% if chrony_temp_compensation.enable %}
+# Temperature compensation
+tempcomp {{ chrony_temp_compensation.sensor_file }} {{ chrony_temp_compensation.update_interval }} {{ chrony_temp_compensation.config_file }}
+{% endif %}
+
+# -----------------------------------------------------------------------------
+# 8. NTP Client Options
+# -----------------------------------------------------------------------------
+{% if chrony_client_settings.use_dhcp %}
+# Acquire servers from DHCP
+sourcedir {{ chrony_client_settings.dhcp_sourcedir }}
+{% endif %}
+
+# Include configurations from external sources
+confdir {{ chrony_client_settings.conf_dir }}
+
+{% if chrony_client_settings.initstepslew.enable %}
+# Enable rapid synchronization at startup
+initstepslew {{ chrony_client_settings.initstepslew.threshold }} {{ chrony_ntp_servers[0] if chrony_ntp_servers else "" }}
+{% endif %}
+
+# -----------------------------------------------------------------------------
+# End of Configuration
+# =============================================================================

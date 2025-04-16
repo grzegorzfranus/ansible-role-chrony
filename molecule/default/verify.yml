@@ -1,0 +1,171 @@
+---
+# =============================================================================
+# Ansible Role: Chrony - Molecule Verification Playbook
+# =============================================================================
+# This playbook verifies the installation and configuration of Chrony.
+# It performs comprehensive checks of:
+# - Package installation and versioning
+# - Service status and configuration
+# - File permissions and ownership
+# - Log management setup
+# - Time synchronization accuracy
+#
+# Flow:
+# 1. Load variables and gather facts
+# 2. Verify package installation
+# 3. Check service status
+# 4. Validate configuration
+# 5. Verify logging setup
+# 6. Test time synchronization
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Environment Setup
+# -----------------------------------------------------------------------------
+- name: molecule | Verify Role
+  hosts: all
+  gather_facts: true
+
+  vars_files:
+    - ../../defaults/main.yml
+    - ../../vars/main.yml
+
+  tasks:
+    - name: Verify | Gather OS specific variables
+      include_vars: "{{ lookup('first_found', params) }}"
+      vars:
+        params:
+          files:
+            - "{{ ansible_facts['distribution'] | lower }}_{{ ansible_facts['distribution_version'] | lower }}.yml"
+            - "{{ ansible_facts['distribution'] | lower }}_{{ ansible_facts['distribution_major_version'] | lower }}.yml"
+            - "{{ ansible_facts['distribution'] | lower }}.yml"
+            - "{{ ansible_facts['os_family'] | lower }}_{{ ansible_facts['distribution_version'] | lower }}.yml"
+            - "{{ ansible_facts['os_family'] | lower }}_{{ ansible_facts['distribution_major_version'].split('.')[0] }}.yml"
+            - "{{ ansible_facts['os_family'] | lower }}.yml"
+            - "main.yml"
+          paths:
+            - "../../vars"
+
+# -----------------------------------------------------------------------------
+# 2. Package Verification
+# -----------------------------------------------------------------------------
+    - name: Verify | Check if chrony package is installed
+      ansible.builtin.package:
+        name: "{{ chrony_package_name }}"
+        state: present
+      register: _package_result_
+
+    - name: Verify | Check if installed binary is available
+      ansible.builtin.stat:
+        path: "{{ chrony_binary_path }}"
+        checksum_algorithm: sha256
+      register: _binary_result_
+
+    - name: Verify | Show check version details
+      ansible.builtin.debug:
+        msg: "Chrony version: {{ _package_result_.version }}"
+      when: _package_result_.version is defined
+
+# -----------------------------------------------------------------------------
+# 3. Service Status Verification
+# -----------------------------------------------------------------------------
+    - name: Verify | Check if chrony service is running
+      ansible.builtin.service:
+        name: "{{ chrony_service_name }}"
+        state: started
+      register: _service_result_
+
+    - name: Verify | Check if chrony service is enabled
+      ansible.builtin.service:
+        name: "{{ chrony_service_name }}"
+        state: started
+        enabled: true
+      register: _service_enabled_result_
+
+# -----------------------------------------------------------------------------
+# 4. Configuration Verification
+# -----------------------------------------------------------------------------
+    - name: Verify | Check if chrony configuration file exists
+      ansible.builtin.stat:
+        path: "{{ chrony_config_path }}"
+        checksum_algorithm: sha256
+      register: _config_result_
+
+    - name: Verify | Check chrony configuration file permissions
+      ansible.builtin.file:
+        path: "{{ chrony_config_path }}"
+        state: file
+        owner: "{{ chrony_log_directory_user }}"
+        group: "{{ chrony_log_directory_user }}"
+        mode: "0640"
+      register: _config_perms_result_
+
+# -----------------------------------------------------------------------------
+# 5. Logging Setup Verification
+# -----------------------------------------------------------------------------
+    - name: Verify | Check if log directory exists
+      ansible.builtin.stat:
+        path: "{{ chrony_logdir_path }}"
+        checksum_algorithm: sha256
+      register: _logdir_result_
+
+    - name: Verify | Check log directory permissions
+      ansible.builtin.file:
+        path: "{{ chrony_logdir_path }}"
+        state: directory
+        owner: "{{ chrony_log_directory_user }}"
+        group: "{{ chrony_log_directory_user }}"
+        mode: "0750"
+      register: _logdir_perms_result_
+
+    - name: Verify | Check if logrotate configuration exists
+      ansible.builtin.stat:
+        path: "{{ chrony_logrotate_config_path }}"
+        checksum_algorithm: sha256
+      register: _logrotate_result_
+
+    - name: Verify | Check logrotate configuration content
+      ansible.builtin.lineinfile:
+        path: "{{ chrony_logrotate_config_path }}"
+        regexp: "{{ item }}"
+        line: "{{ item }}"
+        state: present
+      loop:
+        - "{{ chrony_logdir_path }}/*.log {"
+        - "    rotate {{ chrony_logrotate_options.count }}"
+        - "    {{ chrony_logrotate_options.frequency }}"
+        - "    compress"
+        - "    missingok"
+        - "    nocreate"
+        - "    copytruncate"
+        - "    dateext"
+        - "    create 0640 {{ chrony_log_directory_user }} {{ chrony_log_directory_user }}"
+        - "    archive"
+        - "    archive_dir {{ chrony_logrotate_options.archive_directory_path }}"
+        - "}"
+      register: _logrotate_content_result_
+
+# -----------------------------------------------------------------------------
+# 6. Time Synchronization Verification
+# -----------------------------------------------------------------------------
+    - name: Verify | Check chrony synchronization
+      ansible.builtin.command:
+        cmd: "chronyc tracking"
+      register: _sync_result_
+
+    - name: Verify | Check chrony sources
+      ansible.builtin.command:
+        cmd: "chronyc sources"
+      register: _sources_result_
+
+    - name: Verify | Check chrony time accuracy
+      ansible.builtin.command:
+        cmd: "chronyc tracking | grep 'Last offset' | awk '{print $4}'"
+      register: _accuracy_result_
+
+    - name: Verify | Assert time accuracy
+      ansible.builtin.assert:
+        that:
+          - "_accuracy_result_.stdout | float | abs < 1.0"
+        fail_msg: "Time offset is too large: {{ _accuracy_result_.stdout }} seconds"
+      register: _accuracy_check_result_

@@ -1,0 +1,25 @@
+---
+# =============================================================================
+# Ansible Role: Chrony - Common Variables
+# =============================================================================
+# This file defines common variables shared across all distributions.
+# These values are distribution-agnostic and apply to all supported systems.
+#
+# Sections:
+#   1. Package Settings
+#   2. Logrotate Configuration
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Package Settings
+# -----------------------------------------------------------------------------
+# Package name is consistent across most distributions
+# Note: This may be overridden in OS-specific vars if needed
+chrony_package_name: "chrony"
+
+# -----------------------------------------------------------------------------
+# 2. Logrotate Configuration
+# -----------------------------------------------------------------------------
+# Path to logrotate configuration file
+# This path is standard across most Linux distributions
+chrony_logrotate_config_path: "/etc/logrotate.d/chrony"

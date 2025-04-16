@@ -1,0 +1,53 @@
+---
+# =============================================================================
+# Ansible Role: Chrony - System Requirements
+# =============================================================================
+# This file contains tasks for checking and configuring system requirements.
+# It ensures that conflicting time synchronization services are stopped and disabled.
+#
+# Sections:
+#   1. NTP Service Management
+#   2. Systemd-timesyncd Service Management
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. NTP Service Management
+# -----------------------------------------------------------------------------
+- name: requirements | Check if NTP service exists
+  ansible.builtin.shell: >
+    systemctl is-active {{ chrony_ntp_service_name }}.service ||
+    systemctl is-enabled {{ chrony_ntp_service_name }}.service
+  register: _ntp_service_check_
+  failed_when: false
+  changed_when: false
+
+- name: requirements | Stop and disable NTP service if running
+  ansible.builtin.service:
+    name: "{{ chrony_ntp_service_name }}"
+    state: stopped
+    enabled: false
+  when: >
+    not ansible_check_mode and
+    _ntp_service_check_.rc is defined and
+    _ntp_service_check_.rc == 0
+
+# -----------------------------------------------------------------------------
+# 2. Systemd-timesyncd Service Management
+# -----------------------------------------------------------------------------
+- name: requirements | Check if systemd-timesyncd service exists
+  ansible.builtin.shell: >
+    systemctl is-active {{ chrony_systemd_timesyncd_service_name }}.service ||
+    systemctl is-enabled {{ chrony_systemd_timesyncd_service_name }}.service
+  register: _systemd_timesyncd_service_check_
+  failed_when: false
+  changed_when: false
+
+- name: requirements | Stop and disable systemd-timesyncd service if running
+  ansible.builtin.service:
+    name: "{{ chrony_systemd_timesyncd_service_name }}"
+    state: stopped
+    enabled: false
+  when: >
+    not ansible_check_mode and
+    _systemd_timesyncd_service_check_.rc is defined and
+    _systemd_timesyncd_service_check_.rc == 0

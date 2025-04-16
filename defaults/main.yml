@@ -1,0 +1,158 @@
+---
+# =============================================================================
+# Ansible Role: Chrony - Default Variables
+# =============================================================================
+# This file defines default configuration values for the Chrony NTP service.
+# These values can be overridden by setting them in your playbook or inventory.
+#
+# Sections:
+#   1. General Settings
+#   2. System Clock Management
+#   3. Security Settings
+#   4. Leap Second Settings
+#   5. Chrony Logging
+#   6. Logrotate Settings
+#   7. Advanced Tuning
+#   8. System Performance
+#   9. NTP Client Options
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. General Settings
+# -----------------------------------------------------------------------------
+# Role execution control and basic service configuration.
+
+# Define which parts of the role to execute (Options: 'all', 'install', 'config')
+chrony_role_action: "all"
+
+# Enable/disable Chrony service on boot
+chrony_service_enabled: true
+
+# Enable/disable logrotate configuration for Chrony logs
+chrony_configure_logrotate: false
+
+# Enable test mode (useful for debugging)
+chrony_run_test: false
+
+# -----------------------------------------------------------------------------
+# 2. System Clock Management
+# -----------------------------------------------------------------------------
+# NTP server configuration
+chrony_ntp_source_mode: "server"
+
+# List of NTP servers to sync with
+# Format: "server [options]"
+#   - iburst: Speed up initial synchronization
+#   - minpoll N: Minimum polling interval of 2^N seconds
+#   - maxpoll N: Maximum polling interval of 2^N seconds
+chrony_ntp_servers:
+  - "0.pool.ntp.org iburst minpoll 4 maxpoll 8"  # Poll every 16-256 seconds
+  - "1.pool.ntp.org iburst minpoll 4 maxpoll 8"
+  - "2.pool.ntp.org iburst minpoll 4 maxpoll 8"
+  - "3.pool.ntp.org iburst minpoll 4 maxpoll 8"
+
+# Enable kernel synchronization of the real-time clock (RTC)
+chrony_rtcsync_enable: true
+
+# Maximum allowed root distance in seconds
+# Increase this if you have unreliable network connectivity
+chrony_maxdistance: 3.0
+
+# Directory for storing NTS cookies and keys
+chrony_ntsdumpdir: "/var/lib/chrony"
+
+# Minimum number of sources required for synchronization
+chrony_num_minsources: 1
+
+# Maximum allowed skew for updates (in ppm)
+# Increase this if you have a very unstable clock
+chrony_maxupdateskew: 100.0
+
+# Step clock if offset is larger than 1.0 seconds, but only in first 3 updates
+# Format: "<threshold> <limit>"
+chrony_makestep: "1.0 3"
+
+# Clock synchronization settings
+chrony_driftfile_path: "/var/lib/chrony/drift"
+
+# -----------------------------------------------------------------------------
+# 3. Security Settings
+# -----------------------------------------------------------------------------
+# Authentication and access control
+chrony_keyfile_path: "/etc/chrony/chrony.keys"
+chrony_command_key_id: 1
+chrony_default_access: "deny"  # Can be 'deny' or 'allow'
+chrony_auth_settings:
+  enable: false
+  selectmode: "require"  # Can be 'require', 'prefer', 'ignore'
+
+# List of allowed NTP clients (commented out by default)
+# Uncomment and modify to restrict NTP client access
+# chrony_ntp_clients:
+#   - 127.0.0.1
+
+# -----------------------------------------------------------------------------
+# 4. Leap Second Settings
+# -----------------------------------------------------------------------------
+chrony_leapsectz: "right/UTC"
+chrony_leapsec_settings:
+  mode: "slew"
+  maxslewrate: 1000.0
+  smoothtime: "400 0.001 leaponly"
+
+# -----------------------------------------------------------------------------
+# 5. Chrony Logging
+# -----------------------------------------------------------------------------
+# Chrony service logging configuration
+chrony_log_enable: true
+chrony_logdir_path: "/var/log/chrony"
+chrony_log_options: "measurements statistics tracking"  # Options: measurements, statistics, tracking, rtc, refclocks, tempcomp
+chrony_logchange: "0.5"  # Log clock changes larger than 0.5 seconds
+
+# -----------------------------------------------------------------------------
+# 6. Logrotate Settings
+# -----------------------------------------------------------------------------
+# Configuration for log rotation to manage Chrony log files
+chrony_logrotate_options:
+  archive_directory_path: "/var/log/chrony"  # Directory where archived logs will be stored
+  frequency: "daily"                         # How often to rotate logs (options: hourly, daily, weekly, monthly)
+  count: 30                                  # Number of rotated log files to keep
+  missingok: true                            # Don't error if log file is missing
+  compress: true                             # Compress rotated logs using gzip
+  nocreate: true                             # Don't create new empty log file
+  copytruncate: false                        # Don't use copy+truncate - use default move
+  dateext: true                              # Add date extension to rotated logs
+
+# -----------------------------------------------------------------------------
+# 7. Advanced Tuning
+# -----------------------------------------------------------------------------
+chrony_hardware_settings:
+  enable_hw_timestamp: true           # Enable hardware timestamping (recommended for high accuracy)
+  hw_timestamp_interfaces: "*"        # Network interfaces for hardware timestamping ('*' = all)
+  refclock_enable: false              # Enable reference clock (e.g. PPS device)
+  refclock_pps: "/dev/pps0"           # Path to PPS device (if refclock_enable is true)
+  refclock_precision: "1e-7"          # Precision for reference clock (seconds)
+  rtcautotrim: 30                     # Interval (seconds) for automatic RTC trimming
+
+# -----------------------------------------------------------------------------
+# 8. System Performance
+# -----------------------------------------------------------------------------
+chrony_system_settings:
+  dumpdir: "/var/lib/chrony"          # Directory for storing clock state dumps
+
+chrony_temp_compensation:
+  enable: false                       # Enable temperature compensation (requires supported hardware)
+  sensor_file: "/sys/class/thermal/thermal_zone0/temp"  # Path to temperature sensor file
+  update_interval: 30                 # How often to update compensation (seconds)
+  config_file: "/etc/chrony/tempcomp" # Path to tempcomp config file
+
+# -----------------------------------------------------------------------------
+# 9. NTP Client Options
+# -----------------------------------------------------------------------------
+chrony_client_settings:
+  use_dhcp: false                     # Use NTP servers provided by DHCP (true/false)
+  dhcp_sourcedir: "/run/chrony-dhcp"  # Directory where DHCP client writes NTP server info
+  conf_dir: "/etc/chrony/conf.d"      # Directory for including extra chrony config files
+  initstepslew:
+    threshold: 30                     # Threshold (seconds) for initial step correction
+    enable: true                      # Enable rapid synchronization at startup (true/false)

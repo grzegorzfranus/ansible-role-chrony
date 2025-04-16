@@ -1,0 +1,44 @@
+---
+# =============================================================================
+# Ansible Role: Chrony - Service Testing
+# =============================================================================
+# This file contains tasks for testing the Chrony service functionality.
+# It verifies time synchronization and service operation.
+#
+# Sections:
+#   1. Handler Flush
+#   2. Time Synchronization Test
+#   3. Service Status Verification
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Handler Flush
+# -----------------------------------------------------------------------------
+- name: test | Flush handlers
+  meta: flush_handlers
+
+# -----------------------------------------------------------------------------
+# 2. Time Synchronization Test
+# -----------------------------------------------------------------------------
+- name: test | Force NTP sync
+  become: true
+  ansible.builtin.command: chronyc makestep
+
+- name: test | Ensure system is NTP time synced
+  ansible.builtin.command: chronyc waitsync 30
+  changed_when: false
+
+# -----------------------------------------------------------------------------
+# 3. Service Status Verification
+# -----------------------------------------------------------------------------
+- name: test | Check if time is synchronized with server
+  ansible.builtin.command: chronyc tracking
+  changed_when: false
+  failed_when: _chrony_tracking_.rc != 0
+  register: _chrony_tracking_
+
+- name: test | Show tracking details
+  ansible.builtin.debug:
+    msg: >
+      Tracking Output:
+      {{ _chrony_tracking_.stdout_lines | join('\n') }}

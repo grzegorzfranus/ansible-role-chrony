@@ -1,0 +1,21 @@
+---
+# =============================================================================
+# Ansible Role: Chrony - Package Upgrade
+# =============================================================================
+# This file contains tasks for upgrading the Chrony package to the latest version.
+# It ensures the package is up to date with the latest security patches and features.
+#
+# Sections:
+#   1. Package Upgrade
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Package Upgrade
+# -----------------------------------------------------------------------------
+- name: upgrade | Upgrade Chrony package to the latest version
+  become: true
+  notify: Handler | Restart Chrony service
+  ansible.builtin.package:
+    name: "{{ chrony_package_name }}"
+    state: latest
+    update_cache: true

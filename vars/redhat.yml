@@ -1,0 +1,47 @@
+---
+# =============================================================================
+# Ansible Role: Chrony - RedHat Family Variables
+# =============================================================================
+# This file defines RedHat-specific variables for Chrony NTP service.
+# These values are specific to RedHat-based distributions (RHEL, CentOS, etc.)
+# and should not be modified unless you understand the implications.
+#
+# Sections:
+#   1. Service Settings
+#   2. File Paths and Permissions
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Service Settings
+# -----------------------------------------------------------------------------
+# Service names specific to RedHat-based systems
+# Note: chronyd is the default NTP service in modern RedHat systems
+
+# Main Chrony service name
+chrony_service_name: "chronyd"
+
+# Legacy NTP service name (for conflict checking)
+chrony_ntp_service_name: "ntpd"
+
+# SystemD timesyncd service name (for conflict checking)
+chrony_systemd_timesyncd_service_name: "systemd-timesyncd"
+
+# -----------------------------------------------------------------------------
+# 2. File Paths and Permissions
+# -----------------------------------------------------------------------------
+# RedHat-specific file paths and user settings
+
+# Main configuration file location
+chrony_config_path: "/etc/chrony.conf"
+
+# System user that owns Chrony processes and files
+chrony_log_directory_user: "chrony"
+
+# Path to the drift file (stores clock frequency error)
+chrony_driftfile_path: "/var/lib/chrony/drift"
+
+# Path to the keys file (for NTP authentication)
+chrony_keyfile_path: "/etc/chrony.keys"
+
+# Path to the chrony binary
+chrony_binary_path: "/usr/sbin/chronyd"

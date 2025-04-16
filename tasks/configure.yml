@@ -1,0 +1,62 @@
+---
+# =============================================================================
+# Ansible Role: Chrony - Service Configuration
+# =============================================================================
+# This file contains tasks for configuring the Chrony service.
+# It handles service state, configuration file deployment, and log directory setup.
+#
+# Sections:
+#   1. Service State Management
+#   2. Configuration File Deployment
+#   3. Log Directory Management
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Service State Management
+# -----------------------------------------------------------------------------
+- name: configure | Enable Chrony service on system startup
+  ansible.builtin.service:
+    name: "{{ chrony_service_name }}"
+    enabled: true
+  notify: Handler | Restart Chrony service
+  when: >
+    chrony_service_enabled | default(false)
+
+- name: configure | Disable Chrony service on system startup
+  ansible.builtin.service:
+    name: "{{ chrony_service_name }}"
+    enabled: false
+  notify: Handler | Restart Chrony service
+  when: >
+    not chrony_service_enabled | default(false)
+
+# -----------------------------------------------------------------------------
+# 2. Configuration File Deployment
+# -----------------------------------------------------------------------------
+- name: configure | Deploy Chrony configuration file
+  become: true
+  ansible.builtin.template:
+    src: "chrony/chrony.conf.j2"
+    dest: "{{ chrony_config_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+  notify: Handler | Restart Chrony service
+
+# -----------------------------------------------------------------------------
+# 3. Log Directory Management
+# -----------------------------------------------------------------------------
+- name: configure | Check whether the log directory exists
+  ansible.builtin.stat:
+    path: "{{ chrony_logdir_path }}"
+  register: _log_directory_stat_
+
+- name: configure | Create log directory if does not exists
+  ansible.builtin.file:
+    path: "{{ chrony_logdir_path }}"
+    state: directory
+    mode: "0750"
+    group: "{{ chrony_log_directory_user }}"
+    owner: "{{ chrony_log_directory_user }}"
+  when: >
+    not _log_directory_stat_.stat.exists

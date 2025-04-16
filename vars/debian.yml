@@ -1,0 +1,48 @@
+---
+# =============================================================================
+# Ansible Role: Chrony - Debian Family Variables
+# =============================================================================
+# This file defines Debian-specific variables for Chrony NTP service.
+# These values are specific to Debian-based distributions (Debian, Ubuntu, etc.)
+# and should not be modified unless you understand the implications.
+#
+# Sections:
+#   1. Service Settings
+#   2. File Paths and Permissions
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Service Settings
+# -----------------------------------------------------------------------------
+# Service names specific to Debian-based systems
+# Note: chrony is the default NTP service in modern Debian systems
+
+# Main Chrony service name
+chrony_service_name: "chrony"
+
+# Legacy NTP service name (for conflict checking)
+chrony_ntp_service_name: "ntp"
+
+# SystemD timesyncd service name (for conflict checking)
+chrony_systemd_timesyncd_service_name: "systemd-timesyncd"
+
+# -----------------------------------------------------------------------------
+# 2. File Paths and Permissions
+# -----------------------------------------------------------------------------
+# Debian-specific file paths and user settings
+
+# Main configuration file location
+chrony_config_path: "/etc/chrony/chrony.conf"
+
+# System user that owns Chrony processes and files
+# Note: Debian uses '_chrony' instead of 'chrony' for security reasons
+chrony_log_directory_user: "_chrony"
+
+# Path to the drift file (stores clock frequency error)
+chrony_driftfile_path: "/var/lib/chrony/chrony.drift"
+
+# Path to the keys file (for NTP authentication)
+chrony_keyfile_path: "/etc/chrony/chrony.keys"
+
+# Path to the chrony binary
+chrony_binary_path: "/usr/sbin/chronyd"

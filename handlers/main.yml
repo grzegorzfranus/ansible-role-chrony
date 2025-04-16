@@ -1,0 +1,15 @@
+---
+# =============================================================================
+# Ansible Role: Chrony - Handlers
+# =============================================================================
+# Handlers are used to perform service actions in response to changes.
+# This handler restarts the Chrony service when notified by a task.
+#
+# Variables:
+#   chrony_service_name - Name of the Chrony service to manage (should be set in vars or defaults)
+# =============================================================================
+
+- name: Handler | Restart Chrony service
+  ansible.builtin.service:
+    name: "{{ chrony_service_name }}"  # Name of the Chrony service (e.g. chrony)
+    state: restarted
