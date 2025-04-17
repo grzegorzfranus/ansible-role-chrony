@@ -10,6 +10,7 @@
 # =============================================================================
 
 - name: Handler | Restart Chrony service
+  become: true
   ansible.builtin.service:
     name: "{{ chrony_service_name }}"  # Name of the Chrony service (e.g. chrony)
     state: restarted

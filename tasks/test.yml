@@ -14,13 +14,13 @@
 # -----------------------------------------------------------------------------
 # 1. Handler Flush
 # -----------------------------------------------------------------------------
-- name: test | Flush handlers
+- name: Test | Flush handlers
   meta: flush_handlers
 
 # -----------------------------------------------------------------------------
 # 2. Time Synchronization Test
 # -----------------------------------------------------------------------------
-- name: test | Force NTP sync
+- name: Test | Force NTP sync
   become: true
   ansible.builtin.command: chronyc makestep
 
@@ -31,13 +31,13 @@
 # -----------------------------------------------------------------------------
 # 3. Service Status Verification
 # -----------------------------------------------------------------------------
-- name: test | Check if time is synchronized with server
+- name: Test | Check if time is synchronized with server
   ansible.builtin.command: chronyc tracking
   changed_when: false
   failed_when: _chrony_tracking_.rc != 0
   register: _chrony_tracking_
 
-- name: test | Show tracking details
+- name: Test | Show tracking details
   ansible.builtin.debug:
     msg: >
       Tracking Output:

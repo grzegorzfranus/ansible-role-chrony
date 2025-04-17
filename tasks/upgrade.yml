@@ -12,7 +12,7 @@
 # -----------------------------------------------------------------------------
 # 1. Package Upgrade
 # -----------------------------------------------------------------------------
-- name: upgrade | Upgrade Chrony package to the latest version
+- name: Upgrade | Upgrade Chrony package to the latest version
   become: true
   notify: Handler | Restart Chrony service
   ansible.builtin.package:
