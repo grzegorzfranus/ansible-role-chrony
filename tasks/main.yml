@@ -9,7 +9,7 @@
 # Flow:
 # 1. Load OS-specific variables
 # 2. Validate role requirements and variables
-# 3. Check system requirements
+# 3. Check system prerequisites
 # 4. Install Chrony
 # 5. Configure Chrony
 # 6. Setup logrotate (optional)
@@ -52,15 +52,15 @@
     - check
 
 # -----------------------------------------------------------------------------
-# 3. System Requirements
+# 3. System Prerequisites
 # -----------------------------------------------------------------------------
-- name: Chrony | requirements | Verify system requirements
-  ansible.builtin.include_tasks: requirements.yml
+- name: Chrony | prerequisites | Verify system prerequisites
+  ansible.builtin.include_tasks: prerequisites.yml
   when: >
-    chrony_role_action in ['all', 'requirements']
+    chrony_role_action in ['all', 'prerequisites']
   tags:
     - setup
-    - requirements
+    - prerequisites
 
 # -----------------------------------------------------------------------------
 # 4. Package Installation

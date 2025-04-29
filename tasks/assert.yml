@@ -23,9 +23,9 @@
     that:
       - chrony_role_action is defined
       - chrony_role_action is string
-      - chrony_role_action in ["all", "requirements", "install", "configure", "logrotate", "upgrade"]
+      - chrony_role_action in ["all", "prerequisites", "install", "configure", "logrotate", "upgrade"]
     fail_msg: >
-      'chrony_role_action' must be one of: all, requirements, install, configure, logrotate, upgrade.
+      'chrony_role_action' must be one of: all, prerequisites, install, configure, logrotate, upgrade.
       This variable controls which parts of the role will be executed.
     quiet: true
 
