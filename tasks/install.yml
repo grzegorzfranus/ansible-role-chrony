@@ -5,14 +5,14 @@
 # This file contains tasks for installing the Chrony package.
 # The installation ensures that the package is present and up to date.
 #
-# Sections:
-#   1. Package Installation
+# Flow:
+# 1. Package Installation
 # =============================================================================
 
 # -----------------------------------------------------------------------------
 # 1. Package Installation
 # -----------------------------------------------------------------------------
-- name: Install | Install Chrony package
+- name: Chrony | install | Install Chrony package
   become: true
   ansible.builtin.package:
     name: "{{ chrony_package_name }}"

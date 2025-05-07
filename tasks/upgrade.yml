@@ -5,14 +5,14 @@
 # This file contains tasks for upgrading the Chrony package to the latest version.
 # It ensures the package is up to date with the latest security patches and features.
 #
-# Sections:
-#   1. Package Upgrade
+# Flow:
+# 1. Package Upgrade
 # =============================================================================
 
 # -----------------------------------------------------------------------------
 # 1. Package Upgrade
 # -----------------------------------------------------------------------------
-- name: Upgrade | Upgrade Chrony package to the latest version
+- name: Chrony | upgrade | Upgrade Chrony package to the latest version
   become: true
   notify: Handler | Restart Chrony service
   ansible.builtin.package:

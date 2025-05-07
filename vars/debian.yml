@@ -1,10 +1,9 @@
 ---
 # =============================================================================
-# Ansible Role: Chrony - Debian Family Variables
+# Ansible Role: Chrony - Debian-Specific Variables
 # =============================================================================
-# This file defines Debian-specific variables for Chrony NTP service.
-# These values are specific to Debian-based distributions (Debian, Ubuntu, etc.)
-# and should not be modified unless you understand the implications.
+# This file defines variables specific to Debian-based distributions.
+# These values override or supplement the common variables defined in main.yml.
 #
 # Sections:
 #   1. Service Settings
@@ -15,8 +14,6 @@
 # 1. Service Settings
 # -----------------------------------------------------------------------------
 # Service names specific to Debian-based systems
-# Note: chrony is the default NTP service in modern Debian systems
-
 # Main Chrony service name
 chrony_service_name: "chrony"
 

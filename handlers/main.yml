@@ -9,8 +9,8 @@
 #   chrony_service_name - Name of the Chrony service to manage (should be set in vars or defaults)
 # =============================================================================
 
-- name: Handler | Restart Chrony service
+- name: Chrony | handlers | Restart Chrony service
   become: true
   ansible.builtin.service:
-    name: "{{ chrony_service_name }}"  # Name of the Chrony service (e.g. chrony)
+    name: "{{ chrony_service_name }}"
     state: restarted

@@ -5,15 +5,15 @@
 # This file contains tasks for checking and configuring system prerequisites.
 # It ensures that conflicting time synchronization services are stopped and disabled.
 #
-# Sections:
-#   1. NTP Service Management
-#   2. Systemd-timesyncd Service Management
+# Flow:
+# 1. NTP Service Management
+# 2. Systemd-timesyncd Service Management
 # =============================================================================
 
 # -----------------------------------------------------------------------------
 # 1. NTP Service Management
 # -----------------------------------------------------------------------------
-- name: Prerequisites | Check if NTP service exists
+- name: Chrony | prerequisites | Check if NTP service exists
   ansible.builtin.shell: >
     systemctl is-active {{ chrony_ntp_service_name }}.service ||
     systemctl is-enabled {{ chrony_ntp_service_name }}.service
@@ -21,7 +21,7 @@
   failed_when: false
   changed_when: false
 
-- name: Prerequisites | Stop and disable NTP service if running
+- name: Chrony | prerequisites | Stop and disable NTP service if running
   become: true
   ansible.builtin.service:
     name: "{{ chrony_ntp_service_name }}"
@@ -35,7 +35,7 @@
 # -----------------------------------------------------------------------------
 # 2. Systemd-timesyncd Service Management
 # -----------------------------------------------------------------------------
-- name: Prerequisites | Check if systemd-timesyncd service exists
+- name: Chrony | prerequisites | Check if systemd-timesyncd service exists
   ansible.builtin.shell: >
     systemctl is-active {{ chrony_systemd_timesyncd_service_name }}.service ||
     systemctl is-enabled {{ chrony_systemd_timesyncd_service_name }}.service
@@ -43,7 +43,7 @@
   failed_when: false
   changed_when: false
 
-- name: Prerequisites | Stop and disable systemd-timesyncd service if running
+- name: Chrony | prerequisites | Stop and disable systemd-timesyncd service if running
   become: true
   ansible.builtin.service:
     name: "{{ chrony_systemd_timesyncd_service_name }}"

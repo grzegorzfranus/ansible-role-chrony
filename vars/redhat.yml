@@ -1,10 +1,9 @@
 ---
 # =============================================================================
-# Ansible Role: Chrony - RedHat Family Variables
+# Ansible Role: Chrony - RedHat-Specific Variables
 # =============================================================================
-# This file defines RedHat-specific variables for Chrony NTP service.
-# These values are specific to RedHat-based distributions (RHEL, CentOS, etc.)
-# and should not be modified unless you understand the implications.
+# This file defines variables specific to RedHat-based distributions.
+# These values override or supplement the common variables defined in main.yml.
 #
 # Sections:
 #   1. Service Settings
@@ -15,8 +14,6 @@
 # 1. Service Settings
 # -----------------------------------------------------------------------------
 # Service names specific to RedHat-based systems
-# Note: chronyd is the default NTP service in modern RedHat systems
-
 # Main Chrony service name
 chrony_service_name: "chronyd"
 
