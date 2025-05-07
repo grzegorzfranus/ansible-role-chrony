@@ -18,7 +18,6 @@
   ansible.builtin.service:
     name: "{{ chrony_service_name }}"
     enabled: true
-  notify: Handler | Restart Chrony service
   when: >
     chrony_service_enabled | default(false)
 
@@ -26,7 +25,6 @@
   ansible.builtin.service:
     name: "{{ chrony_service_name }}"
     enabled: false
-  notify: Handler | Restart Chrony service
   when: >
     not chrony_service_enabled | default(false)
 
@@ -41,7 +39,7 @@
     mode: "0644"
     owner: root
     group: root
-  notify: Handler | Restart Chrony service
+  notify: Chrony | handlers | Restart Chrony service
 
 # -----------------------------------------------------------------------------
 # 3. Log Directory Management
