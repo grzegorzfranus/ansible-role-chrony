@@ -39,12 +39,12 @@
     mode: "0644"
     owner: root
     group: root
-  notify: Chrony | handlers | Restart Chrony service
+  notify: restart chrony
 
 # -----------------------------------------------------------------------------
 # 3. Log Directory Management
 # -----------------------------------------------------------------------------
-- name: Chrony | configure | Check whether the log directory exists
+- name: 🔍 Chrony | configure | Check whether the log directory exists
   ansible.builtin.stat:
     path: "{{ chrony_logdir_path }}"
   register: _log_directory_stat_

@@ -31,7 +31,7 @@
     - ../../vars/main.yml
 
   tasks:
-    - name: Verify | Gather OS specific variables
+    - name: 📂 Verify | Gather OS specific variables
       include_vars: "{{ lookup('first_found', params) }}"
       vars:
         params:
@@ -49,19 +49,19 @@
 # -----------------------------------------------------------------------------
 # 2. Package Verification
 # -----------------------------------------------------------------------------
-    - name: Verify | Check if chrony package is installed
+    - name: 🔍 Verify | Check if chrony package is installed
       ansible.builtin.package:
         name: "{{ chrony_package_name }}"
         state: present
       register: _package_result_
 
-    - name: Verify | Check if installed binary is available
+    - name: 🔍 Verify | Check if installed binary is available
       ansible.builtin.stat:
         path: "{{ chrony_binary_path }}"
         checksum_algorithm: sha256
       register: _binary_result_
 
-    - name: Verify | Show check version details
+    - name: 📊 Verify | Show check version details
       ansible.builtin.debug:
         msg: "Chrony version: {{ _package_result_.version }}"
       when: _package_result_.version is defined
@@ -69,13 +69,13 @@
 # -----------------------------------------------------------------------------
 # 3. Service Status Verification
 # -----------------------------------------------------------------------------
-    - name: Verify | Check if chrony service is running
+    - name: 🔍 Verify | Check if chrony service is running
       ansible.builtin.service:
         name: "{{ chrony_service_name }}"
         state: started
       register: _service_result_
 
-    - name: Verify | Check if chrony service is enabled
+    - name: 🔍 Verify | Check if chrony service is enabled
       ansible.builtin.service:
         name: "{{ chrony_service_name }}"
         state: started
@@ -85,13 +85,13 @@
 # -----------------------------------------------------------------------------
 # 4. Configuration Verification
 # -----------------------------------------------------------------------------
-    - name: Verify | Check if chrony configuration file exists
+    - name: 🔍 Verify | Check if chrony configuration file exists
       ansible.builtin.stat:
         path: "{{ chrony_config_path }}"
         checksum_algorithm: sha256
       register: _config_result_
 
-    - name: Verify | Check chrony configuration file permissions
+    - name: 🔍 Verify | Check chrony configuration file permissions
       ansible.builtin.file:
         path: "{{ chrony_config_path }}"
         state: file
@@ -103,13 +103,13 @@
 # -----------------------------------------------------------------------------
 # 5. Logging Setup Verification
 # -----------------------------------------------------------------------------
-    - name: Verify | Check if log directory exists
+    - name: 🔍 Verify | Check if log directory exists
       ansible.builtin.stat:
         path: "{{ chrony_logdir_path }}"
         checksum_algorithm: sha256
       register: _logdir_result_
 
-    - name: Verify | Check log directory permissions
+    - name: 🔍 Verify | Check log directory permissions
       ansible.builtin.file:
         path: "{{ chrony_logdir_path }}"
         state: directory
@@ -118,13 +118,13 @@
         mode: "0750"
       register: _logdir_perms_result_
 
-    - name: Verify | Check if logrotate configuration exists
+    - name: 🔍 Verify | Check if logrotate configuration exists
       ansible.builtin.stat:
         path: "{{ chrony_logrotate_config_path }}"
         checksum_algorithm: sha256
       register: _logrotate_result_
 
-    - name: Verify | Check logrotate configuration content
+    - name: 🔍 Verify | Check logrotate configuration content
       ansible.builtin.lineinfile:
         path: "{{ chrony_logrotate_config_path }}"
         regexp: "{{ item }}"
@@ -148,24 +148,52 @@
 # -----------------------------------------------------------------------------
 # 6. Time Synchronization Verification
 # -----------------------------------------------------------------------------
-    - name: Verify | Check chrony synchronization
+    - name: 🔍 Verify | Check chrony synchronization
       ansible.builtin.command:
         cmd: "chronyc tracking"
       register: _sync_result_
 
-    - name: Verify | Check chrony sources
+    - name: 🔍 Verify | Check chrony sources
       ansible.builtin.command:
         cmd: "chronyc sources"
       register: _sources_result_
 
-    - name: Verify | Check chrony time accuracy
+    - name: 🔍 Verify | Check chrony time accuracy
       ansible.builtin.command:
         cmd: "chronyc tracking | grep 'Last offset' | awk '{print $4}'"
       register: _accuracy_result_
 
-    - name: Verify | Assert time accuracy
+    - name: 🧪 Verify | Assert time accuracy
       ansible.builtin.assert:
         that:
           - "_accuracy_result_.stdout | float | abs < 1.0"
-        fail_msg: "Time offset is too large: {{ _accuracy_result_.stdout }} seconds"
+        fail_msg: "❌ Time offset is too large: {{ _accuracy_result_.stdout }} seconds"
+        success_msg: "✅ Time accuracy verified within acceptable range"
       register: _accuracy_check_result_
+
+    - name: 🧪 Verify | Assert Chrony binary exists
+      ansible.builtin.assert:
+        that:
+          - _binary_result_.stat.exists
+        fail_msg: "❌ Chrony binary not found at {{ chrony_binary_path }}"
+        success_msg: "✅ Chrony binary verified at {{ chrony_binary_path }}"
+
+    - name: 🧪 Verify | Assert configuration file exists
+      ansible.builtin.assert:
+        that:
+          - _config_result_.stat.exists
+        fail_msg: "❌ Chrony configuration file not found at {{ chrony_config_path }}"
+        success_msg: "✅ Chrony configuration file verified"
+
+    - name: 📊 Verify | Show verification results
+      ansible.builtin.debug:
+        msg: "✅ All Chrony verification checks completed successfully! 🎉"
+
+    - name: 🎯 Verify | Final verification summary
+      ansible.builtin.debug:
+        msg:
+          - "⏰ Time synchronization: Configured and accurate"
+          - "📁 Configuration files: Created with proper permissions"
+          - "📝 Logging setup: {{ 'Configured' if chrony_log_enable else 'Disabled' }}"
+          - "🔄 Log rotation: {{ 'Configured' if chrony_configure_logrotate else 'Disabled' }}"
+          - "🚀 Chrony role verification: PASSED ✅"

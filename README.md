@@ -2,22 +2,41 @@
 
 |Source|Version|CI|License|
 |------|-------|-------|-------|
-|[![Source Code](https://img.shields.io/badge/source-github-blue.svg)](https://github.com/grzegorzfranus/ansible-role-chrony)|[![Version](https://img.shields.io/github/v/release/grzegorzfranus/ansible-role-chrony)](https://github.com/grzegorzfranus/ansible-role-chrony/releases)|[![tests](https://github.com/grzegorzfranus/ansible-role-chrony/actions/workflows/ci.yml/badge.svg)](https://github.com/grzegorzfranus/ansible-role-chrony/actions)|[![Repository License](https://img.shields.io/badge/license-apache2.0-brightgreen.svg)](LICENSE)|
+|[![Source Code](https://img.shields.io/badge/source-github-blue.svg)](https://github.com/grzegorzfranus/ansible-role-chrony)|[![Version](https://img.shields.io/github/v/release/grzegorzfranus/ansible-role-chrony)](https://github.com/grzegorzfranus/ansible-role-chrony/releases)|[![tests](https://github.com/grzegorzfranus/ansible-role-chrony/actions/workflows/test-and-validation.yml/badge.svg)](https://github.com/grzegorzfranus/ansible-role-chrony/actions)|[![Repository License](https://img.shields.io/badge/license-apache2.0-brightgreen.svg)](LICENSE)|
 
 This Ansible role installs and configures Chrony, a versatile implementation of the Network Time Protocol (NTP). It provides a robust and secure time synchronization solution with features like NTP server/pool configuration, log rotation management, and service state control.
 
-## Main Actions
+## ✨ Features
 
-- Handle system requirements (stop conflicting services)
-- Install Chrony package
-- Configure Chrony service
-- Manage service state
-- Set up NTP servers/pools
-- Configure log rotation
-- Upgrade package
-- Verify time synchronization
+- ⏰ **Accurate Time Synchronization**: High-precision NTP client/server implementation
+- 🔧 **Automatic Configuration**: Zero-configuration setup with sensible defaults
+- 🛡️ **Security Hardening**: Secure file permissions and access control
+- 🚀 **Service Management**: Complete systemd service configuration and management
+- 📊 **Comprehensive Logging**: Detailed logging with rotation and archival
+- 🧪 **Time Verification**: Built-in accuracy testing and validation
+- 🌐 **Flexible Topology**: Support for both client and server configurations
+- 🔄 **Automatic Updates**: Package upgrade capabilities with service management
+- 📝 **Configuration Backup**: Safe configuration deployment with rollback capability
+- 🧪 **Container Testing**: Full Molecule test suite for CI/CD integration
 
-## Requirements
+## 🎯 Architecture
+
+The role provides flexible time synchronization architecture supporting both:
+
+- **Client Mode**: Synchronizes time from external NTP servers/pools
+- **Server Mode**: Acts as NTP server for local network clients
+- **Hybrid Mode**: Can simultaneously serve and sync time
+
+```
+External NTP Servers ←→ Chrony Server ←→ Local Clients
+      (upstream)         (this host)      (downstream)
+```
+
+## 📋 Requirements
+
+- **Ansible**: 2.15 or higher
+- **Network**: Internet access for NTP synchronization (client mode)
+- **Privileges**: sudo/root access on target hosts
 
 ### Supported operating systems
 List of officially supported operating systems:
@@ -44,7 +63,85 @@ The role uses facts gathered by Ansible on the remote host. If you disable the S
 ### Root access
 This role requires root access for some tasks. Make sure that you are using a user with root privileges.
 
-## Role Variables
+## 🚀 Quick Start
+
+### 1. Basic NTP Client Setup
+
+```yaml
+---
+- name: Configure NTP Client
+  hosts: all
+  become: true
+  roles:
+    - role: grzegorzfranus.chrony
+      vars:
+        chrony_ntp_source_mode: "client"
+        chrony_service_enabled: true
+```
+
+### 2. NTP Server Configuration  
+
+```yaml
+---
+- name: Configure NTP Server  
+  hosts: ntp_servers
+  become: true
+  roles:
+    - role: grzegorzfranus.chrony
+      vars:
+        chrony_ntp_source_mode: "server"
+        chrony_ntp_clients:
+          - "allow 192.168.0.0/16"
+```
+
+### 3. Run the playbook
+
+```bash
+ansible-playbook -i inventory chrony-setup.yml
+```
+
+## ⚙️ Configuration
+
+### Default Configuration
+
+The role comes with production-ready defaults:
+
+```yaml
+# Time synchronization
+chrony_ntp_source_mode: "server"
+chrony_service_enabled: true
+
+# Network sources
+chrony_ntp_servers:
+  - "0.pool.ntp.org iburst minpoll 4 maxpoll 8"
+  - "1.pool.ntp.org iburst minpoll 4 maxpoll 8"
+  
+# Security settings
+chrony_rtcsync_enable: true
+chrony_maxdistance: 3.0
+```
+
+### Advanced Configuration
+
+Customize for specific requirements:
+
+```yaml
+---
+- name: Advanced Chrony Configuration
+  hosts: all
+  become: true
+  vars:
+    chrony_ntp_source_mode: "client"
+    chrony_configure_logrotate: true
+    chrony_log_enable: true
+    chrony_hardware_settings:
+      enable_hw_timestamp: true
+      hw_timestamp_interfaces: "*"
+  roles:
+    - role: grzegorzfranus.chrony
+```
+
+## 📊 Variables
 
 ### General Options
 
@@ -147,7 +244,163 @@ This role requires root access for some tasks. Make sure that you are using a us
 | `chrony_client_settings.initstepslew.threshold` | Threshold for initial step correction | `30` |
 | `chrony_client_settings.initstepslew.enable` | Enable rapid synchronization at startup | `true` |
 
-## Tags
+## 🔍 Verification
+
+After deployment, verify time synchronization is working:
+
+### Check Chrony Status
+
+```bash
+# Check service status
+sudo systemctl status chrony
+
+# View synchronization status
+sudo chronyc tracking
+
+# Check time sources
+sudo chronyc sources -v
+```
+
+### Verify Time Accuracy
+
+```bash
+# Check current time sync status
+sudo chronyc tracking | grep "Last offset"
+
+# Force time synchronization
+sudo chronyc makestep
+
+# Wait for sync and verify
+sudo chronyc waitsync 30
+```
+
+### Check Logs
+
+```bash
+# View Chrony logs (if logging enabled)
+sudo tail -f /var/log/chrony/chrony.log
+
+# Check systemd logs
+sudo journalctl -u chrony -f
+
+# Verify log rotation (if configured)
+ls -la /var/log/chrony/
+```
+
+## 🛡️ Security Features
+
+- ✅ **Secure Default Configuration**: Minimal attack surface with deny-by-default access
+- ✅ **File Permissions**: Proper ownership and permissions for configuration files
+- ✅ **Service Isolation**: Runs with minimal required privileges
+- ✅ **Authentication Support**: NTP authentication key management
+- ✅ **Access Control**: Client whitelist/blacklist capability
+- ✅ **Configuration Validation**: Input validation and secure defaults
+
+### Enhanced Security Configuration
+
+```yaml
+# Restrict client access
+chrony_default_access: "deny"
+chrony_ntp_clients:
+  - "allow 192.168.1.0/24"
+  - "deny 192.168.1.100"
+
+# Enable authentication
+chrony_auth_settings:
+  enable: true
+  selectmode: "require"
+```
+
+## 🔧 Troubleshooting
+
+### Service won't start
+
+```bash
+# Check configuration syntax
+sudo chronyc -n tracking
+
+# Check systemd status
+sudo systemctl status chrony
+
+# View detailed logs
+sudo journalctl -u chrony --no-pager
+```
+
+### Time synchronization issues
+
+```bash
+# Check sources
+sudo chronyc sources
+
+# Force immediate sync
+sudo chronyc makestep
+
+# Check network connectivity to NTP servers
+ping 0.pool.ntp.org
+
+# Verify no conflicting time services
+sudo systemctl status systemd-timesyncd
+sudo systemctl status ntp
+```
+
+### Log rotation problems
+
+```bash
+# Check logrotate configuration
+sudo logrotate -d /etc/logrotate.d/chrony
+
+# Test log rotation manually
+sudo logrotate -f /etc/logrotate.d/chrony
+
+# Check log directory permissions
+ls -la /var/log/chrony/
+```
+
+## 📁 File Structure
+
+```
+ansible-role-chrony/
+├── .github/                  # GitHub Actions workflows
+│   └── workflows/           # CI/CD automation
+│       ├── test-and-validation.yml # 🧪 Testing and validation workflow
+│       └── publish-to-galaxy.yml # 📦 Ansible Galaxy publishing workflow
+├── CHANGELOG.md              # Version history and changes
+├── LICENSE                   # Apache-2.0 license
+├── README.md                # This documentation file
+├── defaults/
+│   └── main.yml             # Default configuration variables
+├── handlers/
+│   └── main.yml             # Service restart and reload handlers
+├── meta/
+│   └── main.yml             # Role metadata and Galaxy information
+├── molecule/                 # Molecule testing framework
+│   └── default/             # Default test scenario
+│       ├── molecule.yml     # Test configuration
+│       ├── converge.yml     # Role execution playbook
+│       ├── prepare.yml      # Test preparation tasks
+│       └── verify.yml       # Verification tests
+├── tasks/
+│   ├── main.yml             # Main task orchestration and flow control
+│   ├── assert.yml           # Variable validation and system compatibility checks
+│   ├── prerequisites.yml    # System preparation and conflicting service management
+│   ├── install.yml          # Package installation and verification
+│   ├── configure.yml        # Service configuration and management
+│   ├── logrotate.yml        # Log rotation configuration
+│   ├── upgrade.yml          # Package upgrade management
+│   └── test.yml             # Time synchronization testing and verification
+├── templates/
+│   ├── chrony/
+│   │   └── chrony.conf.j2   # Main Chrony configuration template
+│   └── logrotate/
+│       └── chrony.j2        # Log rotation configuration template
+└── vars/
+    ├── main.yml             # Internal role variables and constants
+    ├── debian.yml           # Debian-specific variables
+    ├── redhat.yml           # RedHat-specific variables
+    └── ubuntu.yml           # Ubuntu-specific variables
+```
+
+## 🏷️ Tags
 
 - `always` - Tasks that always run (variable loading and validation)
 - `setup` - Setup tasks including OS-specific variables, requirements, installation, and configuration
@@ -249,25 +502,64 @@ This role requires root access for some tasks. Make sure that you are using a us
         chrony_log_options: "tracking rtc"
 ```
 
-## Testing
+## 🧪 Testing
 
-This role includes Molecule tests for multiple platforms:
+This role includes comprehensive Molecule tests that validate functionality across all supported operating systems:
+
+- **Ubuntu 22.04 LTS** - Complete functionality testing
+- **Ubuntu 24.04 LTS** - Complete functionality testing  
+- **Debian 12** - Complete functionality testing
+- **Debian 11** - Complete functionality testing
+- **Rocky Linux 9** - Complete functionality testing
+
+### Running Tests Locally
 
 ```bash
-# Run tests for all platforms
+# Install testing dependencies
+pip install molecule molecule-plugins[docker] ansible-lint
+
+# Run all tests
 molecule test
 
+# Run tests for specific platform
+MOLECULE_DISTRO=ubuntu2204 molecule test
+
+# Test only linting
+molecule lint
 ```
 
-## License
+### Test Matrix
 
-Apache-2.0
+The test suite verifies:
+- ✅ **Package Installation**: Correct Chrony package installation
+- ✅ **Service Management**: Service enablement and startup
+- ✅ **Configuration**: Proper configuration file generation
+- ✅ **Time Sync**: Actual time synchronization verification
+- ✅ **Permissions**: File and directory security
+- ✅ **Log Rotation**: Logrotate configuration when enabled
 
-## Author Information
+## 🔧 CI/CD Integration
 
-This role was created by [Grzegorz Franus](https://github.com/grzegorzfranus).
+This role includes comprehensive GitHub Actions workflows for automated testing and deployment:
 
-## Contributing
+### Testing Pipeline 🧪
+- **Workflow**: `.github/workflows/test-and-validation.yml`
+- **Name**: `🧪 Test & Validation Pipeline`
+- **Purpose**: Automated testing across multiple platforms
+- **Triggers**: Push to main branch, pull requests
+- **Features**:
+  - Multi-platform testing (Ubuntu 22.04, 24.04, Debian 11, 12, Rocky Linux 9)
+  - Ansible lint validation
+  - Molecule test execution
+  - Cross-platform compatibility verification
+
+### Galaxy Publishing 📦
+- **Workflow**: `.github/workflows/publish-to-galaxy.yml`
+- **Name**: `📦 Publish to Ansible Galaxy`
+- **Purpose**: Automated role publishing to Ansible Galaxy
+- **Triggers**: Tagged releases (v*)
+
+## 🤝 Contributing
 
 Contributions, bug reports, and feature requests are welcome!
 
@@ -278,3 +570,11 @@ Contributions, bug reports, and feature requests are welcome!
 - For major changes, please open an issue first to discuss what you would like to change.
 
 If you have questions or suggestions, feel free to open an issue or contact the author via GitHub.
+
+## 📝 License
+
+This project is licensed under the Apache-2.0 License - see the LICENSE file for details.
+
+## 👥 Author Information
+
+This role was created by [Grzegorz Franus](https://github.com/grzegorzfranus).

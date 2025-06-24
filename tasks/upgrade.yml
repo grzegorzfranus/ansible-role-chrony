@@ -14,7 +14,7 @@
 # -----------------------------------------------------------------------------
 - name: Chrony | upgrade | Upgrade Chrony package to the latest version
   become: true
-  notify: Chrony | handlers | Restart Chrony service
+  notify: restart chrony
   ansible.builtin.package:
     name: "{{ chrony_package_name }}"
     state: latest

@@ -18,51 +18,43 @@
 # -----------------------------------------------------------------------------
 # 1. General Settings Assertions
 # -----------------------------------------------------------------------------
-- name: Chrony | assert | Validate role action parameter
+- name: 🧪 Chrony | assert | Validate role action parameter
   ansible.builtin.assert:
     that:
       - chrony_role_action is defined
       - chrony_role_action is string
       - chrony_role_action in ["all", "prerequisites", "install", "configure", "logrotate", "upgrade"]
-    fail_msg: >
-      'chrony_role_action' must be one of: all, prerequisites, install, configure, logrotate, upgrade.
-      This variable controls which parts of the role will be executed.
-    quiet: true
+    fail_msg: "❌ Invalid role action '{{ chrony_role_action | default('undefined') }}'. Must be one of: all, prerequisites, install, configure, logrotate, upgrade"
+    success_msg: "✅ Role action parameter is valid: {{ chrony_role_action }}"
 
-- name: Chrony | assert | Validate service enabled parameter
+- name: 🧪 Chrony | assert | Validate service enabled parameter
   ansible.builtin.assert:
     that:
       - chrony_service_enabled is defined
       - chrony_service_enabled is boolean
-    fail_msg: >
-      'chrony_service_enabled' must be a boolean value (true/false).
-      This controls whether the Chrony service starts on boot.
-    quiet: true
+    fail_msg: "❌ Invalid service enabled setting '{{ chrony_service_enabled | default('undefined') }}'. Must be boolean (true/false)"
+    success_msg: "✅ Service enabled parameter is valid: {{ chrony_service_enabled }}"
 
-- name: Chrony | assert | Validate logrotate configuration flag
+- name: 🧪 Chrony | assert | Validate logrotate configuration flag
   ansible.builtin.assert:
     that:
       - chrony_configure_logrotate is defined
       - chrony_configure_logrotate is boolean
-    fail_msg: >
-      'chrony_configure_logrotate' must be a boolean value (true/false).
-      This controls whether log rotation is configured for Chrony logs.
-    quiet: true
+    fail_msg: "❌ Invalid logrotate configuration '{{ chrony_configure_logrotate | default('undefined') }}'. Must be boolean (true/false)"
+    success_msg: "✅ Logrotate configuration flag is valid: {{ chrony_configure_logrotate }}"
 
-- name: Chrony | assert | Validate test execution flag
+- name: 🧪 Chrony | assert | Validate test execution flag
   ansible.builtin.assert:
     that:
       - chrony_run_test is defined
       - chrony_run_test is boolean
-    fail_msg: >
-      'chrony_run_test' must be a boolean value (true/false).
-      This enables test mode for debugging purposes.
-    quiet: true
+    fail_msg: "❌ Invalid test execution flag '{{ chrony_run_test | default('undefined') }}'. Must be boolean (true/false)"
+    success_msg: "✅ Test execution flag is valid: {{ chrony_run_test }}"
 
 # -----------------------------------------------------------------------------
 # 2. Logrotate Settings Assertions
 # -----------------------------------------------------------------------------
-- name: Chrony | assert | Validate logrotate options
+- name: 🧪 Chrony | assert | Validate logrotate options
   ansible.builtin.assert:
     that:
       - chrony_logrotate_options is defined
@@ -83,240 +75,196 @@
       - chrony_logrotate_options.copytruncate is boolean
       - chrony_logrotate_options.dateext is defined
       - chrony_logrotate_options.dateext is boolean
-    fail_msg: >
-      'chrony_logrotate_options' must be a valid mapping with all required fields.
-      Example:
-      chrony_logrotate_options:
-        archive_directory_path: "/var/log/chrony"
-        frequency: "daily"
-        count: 30
-        missingok: true
-        compress: true
-        nocreate: true
-        copytruncate: false
-        dateext: true
-    quiet: true
+    fail_msg: "❌ Invalid logrotate options configuration. Must be a valid mapping with all required fields"
+    success_msg: "✅ Logrotate options are valid with {{ chrony_logrotate_options.frequency }} frequency"
   when: >
     chrony_configure_logrotate | default(false)
 
 # -----------------------------------------------------------------------------
 # 3. NTP Server Settings Assertions
 # -----------------------------------------------------------------------------
-- name: Chrony | assert | Validate NTP source mode
+- name: 🧪 Chrony | assert | Validate NTP source mode
   ansible.builtin.assert:
     that:
       - chrony_ntp_source_mode is defined
       - chrony_ntp_source_mode is string
       - chrony_ntp_source_mode in ["pool", "server"]
-    fail_msg: >
-      'chrony_ntp_source_mode' must be either 'pool' or 'server'.
-      This determines how the host will synchronize time.
-    quiet: true
+    fail_msg: "❌ Invalid NTP source mode '{{ chrony_ntp_source_mode | default('undefined') }}'. Must be 'pool' or 'server'"
+    success_msg: "✅ NTP source mode is valid: {{ chrony_ntp_source_mode }}"
 
-- name: Chrony | assert | Validate NTP server list
+- name: 🧪 Chrony | assert | Validate NTP server list
   ansible.builtin.assert:
     that:
       - chrony_ntp_servers is defined
       - chrony_ntp_servers | length > 0
-      - chrony_ntp_servers is not search('^[0-9]+\\.')
-    fail_msg: >
-      'chrony_ntp_servers' must be a non-empty list of valid NTP servers.
-      Example: ["0.pool.ntp.org iburst minpoll 4 maxpoll 8"]
-    quiet: true
+    fail_msg: "❌ NTP server list is empty or undefined. Must provide at least one NTP server"
+    success_msg: "✅ NTP server list is valid with {{ chrony_ntp_servers | length }} servers"
 
-- name: Chrony | assert | Validate real-time clock sync setting
+- name: 🧪 Chrony | assert | Validate real-time clock sync setting
   ansible.builtin.assert:
     that:
       - chrony_rtcsync_enable is defined
       - chrony_rtcsync_enable is boolean
-    fail_msg: >
-      'chrony_rtcsync_enable' must be a boolean value (true/false).
-      This controls kernel synchronization of the real-time clock.
-    quiet: true
+    fail_msg: "❌ Invalid RTC sync setting '{{ chrony_rtcsync_enable | default('undefined') }}'. Must be boolean (true/false)"
+    success_msg: "✅ Real-time clock sync setting is valid: {{ chrony_rtcsync_enable }}"
 
-- name: Chrony | assert | Validate maximum distance threshold
+- name: 🧪 Chrony | assert | Validate maximum distance threshold
   ansible.builtin.assert:
     that:
       - chrony_maxdistance is defined
       - chrony_maxdistance is number
       - chrony_maxdistance > 0
       - chrony_maxdistance <= 16.0
-    fail_msg: >
-      'chrony_maxdistance' must be a positive number between 0 and 16.0 seconds.
-      This is the maximum allowed root distance for time synchronization.
-    quiet: true
+    fail_msg: "❌ Invalid max distance '{{ chrony_maxdistance | default('undefined') }}'. Must be between 0 and 16.0 seconds"
+    success_msg: "✅ Maximum distance threshold is valid: {{ chrony_maxdistance }} seconds"
 
-- name: Chrony | assert | Validate NTS dump directory
+- name: 🧪 Chrony | assert | Validate NTS dump directory
   ansible.builtin.assert:
     that:
       - chrony_ntsdumpdir is defined
       - chrony_ntsdumpdir is string
       - chrony_ntsdumpdir | length > 0
       - chrony_ntsdumpdir is search('^/')
-    fail_msg: >
-      'chrony_ntsdumpdir' must be a non-empty absolute path.
-      This directory stores NTS cookies and keys.
-    quiet: true
+    fail_msg: "❌ Invalid NTS dump directory '{{ chrony_ntsdumpdir | default('undefined') }}'. Must be a non-empty absolute path"
+    success_msg: "✅ NTS dump directory is valid: {{ chrony_ntsdumpdir }}"
 
-- name: Chrony | assert | Validate minimum sources setting
+- name: 🧪 Chrony | assert | Validate minimum sources setting
   ansible.builtin.assert:
     that:
       - chrony_num_minsources is defined
       - chrony_num_minsources is number
       - chrony_num_minsources > 0
       - chrony_num_minsources <= 10
-    fail_msg: >
-      'chrony_num_minsources' must be a positive number between 1 and 10.
-      This is the minimum number of sources required for synchronization.
-    quiet: true
+    fail_msg: "❌ Invalid minimum sources setting '{{ chrony_num_minsources | default('undefined') }}'. Must be between 1 and 10"
+    success_msg: "✅ Minimum sources setting is valid: {{ chrony_num_minsources }}"
 
-- name: Chrony | assert | Validate maximum update skew
+- name: 🧪 Chrony | assert | Validate maximum update skew
   ansible.builtin.assert:
     that:
       - chrony_maxupdateskew is defined
       - chrony_maxupdateskew is number
       - chrony_maxupdateskew > 0
       - chrony_maxupdateskew <= 1000.0
-    fail_msg: >
-      'chrony_maxupdateskew' must be a positive number between 0 and 1000.0 ppm.
-      This is the maximum allowed skew for updates.
-    quiet: true
+    fail_msg: "❌ Invalid max update skew '{{ chrony_maxupdateskew | default('undefined') }}'. Must be between 0 and 1000.0 ppm"
+    success_msg: "✅ Maximum update skew is valid: {{ chrony_maxupdateskew }} ppm"
 
-- name: Chrony | assert | Validate step threshold configuration
+- name: 🧪 Chrony | assert | Validate step threshold configuration
   ansible.builtin.assert:
     that:
       - chrony_makestep is defined
       - chrony_makestep is string
       - chrony_makestep is search('^[0-9]+\\.[0-9]+ [0-9]+$')
-    fail_msg: >
-      'chrony_makestep' must be in format 'threshold limit' (e.g., '1.0 3').
-      This controls when to step the clock.
-    quiet: true
+    fail_msg: "❌ Invalid step threshold '{{ chrony_makestep | default('undefined') }}'. Must be in format 'threshold limit' (e.g., '1.0 3')"
+    success_msg: "✅ Step threshold configuration is valid: {{ chrony_makestep }}"
 
-- name: Chrony | assert | Validate log change threshold
+- name: 🧪 Chrony | assert | Validate log change threshold
   ansible.builtin.assert:
     that:
       - chrony_logchange is defined
       - chrony_logchange is string
-    fail_msg: >
-      'chrony_logchange' must be a string value.
-      This defines the threshold for logging clock changes.
-    quiet: true
+    fail_msg: "❌ Invalid log change threshold '{{ chrony_logchange | default('undefined') }}'. Must be a string value"
+    success_msg: "✅ Log change threshold is valid: {{ chrony_logchange }}"
 
 # -----------------------------------------------------------------------------
 # 4. Package and Service Settings Assertions
 # -----------------------------------------------------------------------------
-- name: Chrony | assert | Validate package name
+- name: 🧪 Chrony | assert | Validate package name
   ansible.builtin.assert:
     that:
       - chrony_package_name is defined
       - chrony_package_name is string
       - chrony_package_name | length > 0
       - chrony_package_name is search('^[a-z0-9-]+$')
-    fail_msg: >
-      'chrony_package_name' must be a non-empty string containing only lowercase letters, numbers, and hyphens.
-    quiet: true
+    fail_msg: "❌ Invalid package name '{{ chrony_package_name | default('undefined') }}'. Must contain only lowercase letters, numbers, and hyphens"
+    success_msg: "✅ Package name is valid: {{ chrony_package_name }}"
 
-- name: Chrony | assert | Validate service name
+- name: 🧪 Chrony | assert | Validate service name
   ansible.builtin.assert:
     that:
       - chrony_service_name is defined
       - chrony_service_name is string
       - chrony_service_name | length > 0
       - chrony_service_name is search('^[a-z0-9-]+$')
-    fail_msg: >
-      'chrony_service_name' must be a non-empty string containing only lowercase letters, numbers, and hyphens.
-    quiet: true
+    fail_msg: "❌ Invalid service name '{{ chrony_service_name | default('undefined') }}'. Must contain only lowercase letters, numbers, and hyphens"
+    success_msg: "✅ Service name is valid: {{ chrony_service_name }}"
 
-- name: Chrony | assert | Validate NTP service name
+- name: 🧪 Chrony | assert | Validate NTP service name
   ansible.builtin.assert:
     that:
       - chrony_ntp_service_name is defined
       - chrony_ntp_service_name is string
       - chrony_ntp_service_name | length > 0
       - chrony_ntp_service_name is search('^[a-z0-9-]+$')
-    fail_msg: >
-      'chrony_ntp_service_name' must be a non-empty string containing only lowercase letters, numbers, and hyphens.
-    quiet: true
+    fail_msg: "❌ Invalid NTP service name '{{ chrony_ntp_service_name | default('undefined') }}'. Must contain only lowercase letters, numbers, and hyphens"
+    success_msg: "✅ NTP service name is valid: {{ chrony_ntp_service_name }}"
 
-- name: Chrony | assert | Validate systemd-timesyncd service name
+- name: 🧪 Chrony | assert | Validate systemd-timesyncd service name
   ansible.builtin.assert:
     that:
       - chrony_systemd_timesyncd_service_name is defined
       - chrony_systemd_timesyncd_service_name is string
       - chrony_systemd_timesyncd_service_name | length > 0
       - chrony_systemd_timesyncd_service_name is search('^[a-z0-9-]+$')
-    fail_msg: >
-      'chrony_systemd_timesyncd_service_name' must be a non-empty string containing only lowercase letters, numbers, and hyphens.
-    quiet: true
+    fail_msg: "❌ Invalid systemd-timesyncd service name '{{ chrony_systemd_timesyncd_service_name | default('undefined') }}'. Must contain only lowercase letters, numbers, and hyphens"
+    success_msg: "✅ Systemd-timesyncd service name is valid: {{ chrony_systemd_timesyncd_service_name }}"
 
 # -----------------------------------------------------------------------------
 # 5. File Path and Permission Assertions
 # -----------------------------------------------------------------------------
-- name: Chrony | assert | Validate configuration file path
+- name: 🧪 Chrony | assert | Validate configuration file path
   ansible.builtin.assert:
     that:
       - chrony_config_path is defined
       - chrony_config_path is string
       - chrony_config_path | length > 0
       - chrony_config_path is search('^/')
-    fail_msg: >
-      'chrony_config_path' must be a non-empty absolute path.
-      This is the main configuration file location.
-    quiet: true
+    fail_msg: "❌ Invalid config path '{{ chrony_config_path | default('undefined') }}'. Must be an absolute path"
+    success_msg: "✅ Configuration file path is valid: {{ chrony_config_path }}"
 
-- name: Chrony | assert | Validate log directory owner
+- name: 🧪 Chrony | assert | Validate log directory owner
   ansible.builtin.assert:
     that:
       - chrony_log_directory_user is defined
       - chrony_log_directory_user is string
       - chrony_log_directory_user | length > 0
       - chrony_log_directory_user is search('^[a-z0-9_-]+$')
-    fail_msg: >
-      'chrony_log_directory_user' must be a non-empty string containing only lowercase letters, numbers, underscores, and hyphens.
-      This is the system user that owns Chrony processes and files.
-    quiet: true
+    fail_msg: "❌ Invalid log directory owner '{{ chrony_log_directory_user | default('undefined') }}'. Must contain only lowercase letters, numbers, underscores, and hyphens"
+    success_msg: "✅ Log directory owner is valid: {{ chrony_log_directory_user }}"
 
-- name: Chrony | assert | Validate drift file path
+- name: 🧪 Chrony | assert | Validate drift file path
   ansible.builtin.assert:
     that:
       - chrony_driftfile_path is defined
       - chrony_driftfile_path is string
       - chrony_driftfile_path | length > 0
       - chrony_driftfile_path is search('^/')
-    fail_msg: >
-      'chrony_driftfile_path' must be a non-empty absolute path.
-      This is the path to the drift file that stores clock frequency error.
-    quiet: true
+    fail_msg: "❌ Invalid drift file path '{{ chrony_driftfile_path | default('undefined') }}'. Must be a non-empty absolute path"
+    success_msg: "✅ Drift file path is valid: {{ chrony_driftfile_path }}"
 
-- name: Chrony | assert | Validate key file path
+- name: 🧪 Chrony | assert | Validate key file path
   ansible.builtin.assert:
     that:
       - chrony_keyfile_path is defined
       - chrony_keyfile_path is string
       - chrony_keyfile_path | length > 0
       - chrony_keyfile_path is search('^/')
-    fail_msg: >
-      'chrony_keyfile_path' must be a non-empty absolute path.
-      This is the path to the keys file used for NTP authentication.
-    quiet: true
+    fail_msg: "❌ Invalid key file path '{{ chrony_keyfile_path | default('undefined') }}'. Must be a non-empty absolute path"
+    success_msg: "✅ Key file path is valid: {{ chrony_keyfile_path }}"
 
-- name: Chrony | assert | Validate logrotate configuration path
+- name: 🧪 Chrony | assert | Validate logrotate configuration path
   ansible.builtin.assert:
     that:
       - chrony_logrotate_config_path is defined
       - chrony_logrotate_config_path is string
       - chrony_logrotate_config_path | length > 0
       - chrony_logrotate_config_path is search('^/')
-    fail_msg: >
-      'chrony_logrotate_config_path' must be a non-empty absolute path.
-      This is the path to the logrotate configuration file.
-    quiet: true
+    fail_msg: "❌ Invalid logrotate config path '{{ chrony_logrotate_config_path | default('undefined') }}'. Must be a non-empty absolute path"
+    success_msg: "✅ Logrotate configuration path is valid: {{ chrony_logrotate_config_path }}"
 
 # -----------------------------------------------------------------------------
 # 6. Advanced Tuning Assertions
 # -----------------------------------------------------------------------------
-- name: Chrony | assert | Validate hardware settings
+- name: 🧪 Chrony | assert | Validate hardware settings
   ansible.builtin.assert:
     that:
       - chrony_hardware_settings is defined
@@ -333,22 +281,20 @@
       - chrony_hardware_settings.refclock_precision is string
       - chrony_hardware_settings.rtcautotrim is defined
       - chrony_hardware_settings.rtcautotrim is number
-    fail_msg: >
-      'chrony_hardware_settings' must be a mapping with all required fields.
-    quiet: true
+    fail_msg: "❌ Invalid hardware settings configuration. Must be a mapping with all required fields"
+    success_msg: "✅ Hardware settings are valid with HW timestamp: {{ chrony_hardware_settings.enable_hw_timestamp }}"
 
-- name: Chrony | assert | Validate system settings
+- name: 🧪 Chrony | assert | Validate system settings
   ansible.builtin.assert:
     that:
       - chrony_system_settings is defined
       - chrony_system_settings is mapping
       - chrony_system_settings.dumpdir is defined
       - chrony_system_settings.dumpdir is string
-    fail_msg: >
-      'chrony_system_settings' must be a mapping with all required fields.
-    quiet: true
+    fail_msg: "❌ Invalid system settings configuration. Must be a mapping with all required fields"
+    success_msg: "✅ System settings are valid with dump directory: {{ chrony_system_settings.dumpdir }}"
 
-- name: Chrony | assert | Validate temperature compensation settings
+- name: 🧪 Chrony | assert | Validate temperature compensation settings
   ansible.builtin.assert:
     that:
       - chrony_temp_compensation is defined
@@ -361,11 +307,10 @@
       - chrony_temp_compensation.update_interval is number
       - chrony_temp_compensation.config_file is defined
       - chrony_temp_compensation.config_file is string
-    fail_msg: >
-      'chrony_temp_compensation' must be a mapping with all required fields.
-    quiet: true
+    fail_msg: "❌ Invalid temperature compensation settings. Must be a mapping with all required fields"
+    success_msg: "✅ Temperature compensation settings are valid with enable: {{ chrony_temp_compensation.enable }}"
 
-- name: Chrony | assert | Validate client settings
+- name: 🧪 Chrony | assert | Validate client settings
   ansible.builtin.assert:
     that:
       - chrony_client_settings is defined
@@ -382,11 +327,10 @@
       - chrony_client_settings.initstepslew.threshold is number
       - chrony_client_settings.initstepslew.enable is defined
       - chrony_client_settings.initstepslew.enable is boolean
-    fail_msg: >
-      'chrony_client_settings' must be a mapping with all required fields.
-    quiet: true
+    fail_msg: "❌ Invalid client settings configuration. Must be a mapping with all required fields"
+    success_msg: "✅ Client settings are valid with DHCP usage: {{ chrony_client_settings.use_dhcp }}"
 
-- name: Chrony | assert | Validate authentication settings
+- name: 🧪 Chrony | assert | Validate authentication settings
   ansible.builtin.assert:
     that:
       - chrony_auth_settings is defined
@@ -395,11 +339,10 @@
       - chrony_auth_settings.enable is boolean
       - chrony_auth_settings.selectmode is defined
       - chrony_auth_settings.selectmode in ['require', 'prefer', 'ignore']
-    fail_msg: >
-      'chrony_auth_settings' must be a mapping with keys: enable (bool), selectmode (require/prefer/ignore).
-    quiet: true
+    fail_msg: "❌ Invalid authentication settings. Must be a mapping with enable (bool) and selectmode (require/prefer/ignore)"
+    success_msg: "✅ Authentication settings are valid with selectmode: {{ chrony_auth_settings.selectmode }}"
 
-- name: Chrony | assert | Validate leap second settings
+- name: 🧪 Chrony | assert | Validate leap second settings
   ansible.builtin.assert:
     that:
       - chrony_leapsec_settings is defined
@@ -410,6 +353,5 @@
       - chrony_leapsec_settings.maxslewrate is number
       - chrony_leapsec_settings.smoothtime is defined
       - chrony_leapsec_settings.smoothtime is string
-    fail_msg: >
-      'chrony_leapsec_settings' must be a mapping with all required fields.
-    quiet: true
+    fail_msg: "❌ Invalid leap second settings configuration. Must be a mapping with all required fields"
+    success_msg: "✅ Leap second settings are valid with mode: {{ chrony_leapsec_settings.mode }}"

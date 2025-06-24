@@ -22,7 +22,7 @@
 
   pre_tasks:
     # Package Cache Update
-    - name: Converge | Update apt cache
+    - name: 🔄 Converge | Update apt cache
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 600
@@ -30,7 +30,7 @@
       when: >
         ansible_os_family == "Debian"
 
-    - name: Converge | Update dnf cache
+    - name: 🔄 Converge | Update dnf cache
       ansible.builtin.dnf:
         update_cache: true
       changed_when: false
@@ -38,7 +38,7 @@
         ansible_os_family == "RedHat"
 
     # System Initialization
-    - name: Converge | Wait for systemd to complete initialization
+    - name: ⏳ Converge | Wait for systemd to complete initialization
       command: systemctl is-system-running
       register: systemctl_status
       until: >
