@@ -24,11 +24,11 @@
   become: true
   ansible.builtin.command: chronyc makestep
   register: _chrony_makestep_
-  changed_when: 
+  changed_when:
     - _chrony_makestep_.rc == 0
     - "'200 OK' in _chrony_makestep_.stdout"
     - "'Clock was stepped' in _chrony_makestep_.stdout or 'stepped' in _chrony_makestep_.stdout.lower()"
-  failed_when: 
+  failed_when:
     - _chrony_makestep_.rc != 0
     - "'not synchronised' not in _chrony_makestep_.stdout.lower()"
     - "'no suitable source' not in _chrony_makestep_.stdout.lower()"
