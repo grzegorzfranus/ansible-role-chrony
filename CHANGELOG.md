@@ -5,6 +5,41 @@ All notable changes to this Chrony NTP role will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2025-08-06
+
+### Fixed 🔧
+- **Documentation Correction** - Fixed README.md to accurately reflect supported `chrony_ntp_source_mode` options
+- **Variable Documentation** - Corrected documentation to show only 'pool' and 'server' modes are supported (not 'client')
+- **Example Configurations** - Updated all configuration examples to use valid 'pool' mode instead of unsupported 'client' mode
+- **Parameter Validation** - Documentation now matches actual assertion validation that only accepts 'pool' or 'server' modes
+- **Ansible Linting Issues** - Fixed all 6 critical linting violations:
+  - Replaced `systemctl` shell commands with `ansible.builtin.systemd` module in prerequisites.yml
+  - Added FQCN `ansible.builtin.meta` instead of bare `meta` in test.yml
+  - Added `changed_when: true` directive to command task in test.yml
+  - Replaced `state: latest` with `state: present` in upgrade.yml for better idempotency
+  - Fixed Jinja2 spacing issue in logrotate.yml template variable
+- **Task Naming Consistency** - Added missing emojis to all task names for consistent visual organization
+
+### Changed 🔄
+- **README.md Examples** - All example configurations now use `chrony_ntp_source_mode: "pool"` instead of invalid 'client' mode
+- **Variable Table** - Updated variable description to show correct options: 'pool', 'server' (removed invalid 'client' option)
+- **Prerequisites Tasks** - Modernized service checking logic using systemd module instead of shell commands
+- **Task Emojis** - Enhanced all task names with appropriate emojis following role standards:
+  - 📦 for package installation
+  - ⚙️ for configuration tasks
+  - 🔍 for checking/verification tasks
+  - 📁 for directory creation
+  - 🛑 for service stopping
+  - 🔄 for service restarts and upgrades
+
+### Quality Improvements 📈
+- **Linting Compliance** - Achieved perfect ansible-lint score with 0 failures, 0 warnings on 17 files
+- **Production Profile** - Role now meets 'production' validation criteria in ansible-lint
+- **YAML Standards** - Passed yamllint validation with no formatting issues
+- **Module Modernization** - Updated to use modern ansible.builtin modules throughout
+- **Idempotency Enhancement** - Improved task idempotency with proper change detection
+- **Test Task Idempotency** - Fixed `chronyc makestep` task to only report changes when clock is actually stepped, not always marked as changed
+
 ## [1.0.4] - 2025-06-24
 
 ### Changed 🔄

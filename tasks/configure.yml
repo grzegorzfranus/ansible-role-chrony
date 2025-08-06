@@ -14,14 +14,14 @@
 # -----------------------------------------------------------------------------
 # 1. Service State Management
 # -----------------------------------------------------------------------------
-- name: Chrony | configure | Enable Chrony service on system startup
+- name: ⚙️ Chrony | configure | Enable Chrony service on system startup
   ansible.builtin.service:
     name: "{{ chrony_service_name }}"
     enabled: true
   when: >
     chrony_service_enabled | default(false)
 
-- name: Chrony | configure | Disable Chrony service on system startup
+- name: ⚙️ Chrony | configure | Disable Chrony service on system startup
   ansible.builtin.service:
     name: "{{ chrony_service_name }}"
     enabled: false
@@ -31,7 +31,7 @@
 # -----------------------------------------------------------------------------
 # 2. Configuration File Deployment
 # -----------------------------------------------------------------------------
-- name: Chrony | configure | Deploy Chrony configuration file
+- name: ⚙️ Chrony | configure | Deploy Chrony configuration file
   become: true
   ansible.builtin.template:
     src: "chrony/chrony.conf.j2"
@@ -49,7 +49,7 @@
     path: "{{ chrony_logdir_path }}"
   register: _log_directory_stat_
 
-- name: Chrony | configure | Create log directory if not existing
+- name: 📁 Chrony | configure | Create log directory if not existing
   ansible.builtin.file:
     path: "{{ chrony_logdir_path }}"
     state: directory

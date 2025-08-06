@@ -15,13 +15,13 @@
 # -----------------------------------------------------------------------------
 - name: 🔍 Chrony | logrotate | Check whether the archive log directory exists
   ansible.builtin.stat:
-    path: "{{ chrony_logrotate_options.archive_directory_path  }}"
+    path: "{{ chrony_logrotate_options.archive_directory_path }}"
   register: _archive_log_directory_stat_
   changed_when: false
   failed_when: false
   become: true
 
-- name: Chrony | logrotate | Create archive log directory if not existing
+- name: 📁 Chrony | logrotate | Create archive log directory if not existing
   ansible.builtin.file:
     path: "{{ chrony_logrotate_options.archive_directory_path }}"
     state: directory
@@ -33,7 +33,7 @@
 # -----------------------------------------------------------------------------
 # 2. Logrotate Configuration Deployment
 # -----------------------------------------------------------------------------
-- name: Chrony | logrotate | Deploy logrotate configuration file
+- name: ⚙️ Chrony | logrotate | Deploy logrotate configuration file
   ansible.builtin.template:
     src: "templates/logrotate/chrony.j2"
     dest: "{{ chrony_logrotate_config_path }}"

@@ -15,7 +15,7 @@
 # 1. Handler Flush
 # -----------------------------------------------------------------------------
 - name: 🔄 Chrony | test | Flush handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 # -----------------------------------------------------------------------------
 # 2. Time Synchronization Test
@@ -23,6 +23,15 @@
 - name: 🚀 Chrony | test | Force NTP sync
   become: true
   ansible.builtin.command: chronyc makestep
+  register: _chrony_makestep_
+  changed_when: 
+    - _chrony_makestep_.rc == 0
+    - "'200 OK' in _chrony_makestep_.stdout"
+    - "'Clock was stepped' in _chrony_makestep_.stdout or 'stepped' in _chrony_makestep_.stdout.lower()"
+  failed_when: 
+    - _chrony_makestep_.rc != 0
+    - "'not synchronised' not in _chrony_makestep_.stdout.lower()"
+    - "'no suitable source' not in _chrony_makestep_.stdout.lower()"
 
 - name: 🧪 Chrony | test | Ensure system is NTP time synced
   ansible.builtin.command: chronyc waitsync 30

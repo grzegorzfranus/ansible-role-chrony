@@ -75,7 +75,7 @@ This role requires root access for some tasks. Make sure that you are using a us
   roles:
     - role: grzegorzfranus.chrony
       vars:
-        chrony_ntp_source_mode: "client"
+        chrony_ntp_source_mode: "pool"
         chrony_service_enabled: true
 ```
 
@@ -158,7 +158,7 @@ Customize for specific requirements:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `chrony_ntp_source_mode` | Define how this host should operate (Options: 'server', 'client') | `"server"` |
+| `chrony_ntp_source_mode` | Define how this host should operate (Options: 'pool', 'server') | `"server"` |
 | `chrony_ntp_servers` | List of NTP servers to sync with (with options like iburst, minpoll, maxpoll) | See defaults/main.yml |
 | `chrony_rtcsync_enable` | Enable kernel synchronization of the real-time clock (RTC) | `true` |
 | `chrony_maxdistance` | Maximum allowed root distance in seconds | `3.0` |
@@ -431,7 +431,7 @@ ansible-role-chrony/
         chrony_configure_logrotate: true
         
         # NTP Server Configuration
-        chrony_ntp_source_mode: "client"
+        chrony_ntp_source_mode: "pool"
         chrony_ntp_servers:
           - "0.pool.ntp.org iburst minpoll 4 maxpoll 8"
           - "1.pool.ntp.org iburst minpoll 4 maxpoll 8"
@@ -495,7 +495,7 @@ ansible-role-chrony/
   roles:
     - role: grzegorzfranus.chrony
       vars:
-        chrony_ntp_source_mode: "client"
+        chrony_ntp_source_mode: "pool"
         chrony_ntp_servers:
           - "ntp1.internal.example.com iburst"
           - "ntp2.internal.example.com iburst"

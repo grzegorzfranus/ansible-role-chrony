@@ -14,42 +14,42 @@
 # 1. NTP Service Management
 # -----------------------------------------------------------------------------
 - name: 🔍 Chrony | prerequisites | Check if NTP service exists
-  ansible.builtin.shell: >
-    systemctl is-active {{ chrony_ntp_service_name }}.service ||
-    systemctl is-enabled {{ chrony_ntp_service_name }}.service
+  ansible.builtin.systemd:
+    name: "{{ chrony_ntp_service_name }}"
   register: _ntp_service_check_
   failed_when: false
-  changed_when: false
+  check_mode: true
 
-- name: Chrony | prerequisites | Stop and disable NTP service if running
+- name: 🛑 Chrony | prerequisites | Stop and disable NTP service if running
   become: true
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: "{{ chrony_ntp_service_name }}"
     state: stopped
     enabled: false
+    daemon_reload: true
   when: >
     not ansible_check_mode and
-    _ntp_service_check_.rc is defined and
-    _ntp_service_check_.rc == 0
+    _ntp_service_check_.status is defined and
+    _ntp_service_check_.status.ActiveState in ['active', 'activating']
 
 # -----------------------------------------------------------------------------
 # 2. Systemd-timesyncd Service Management
 # -----------------------------------------------------------------------------
 - name: 🔍 Chrony | prerequisites | Check if systemd-timesyncd service exists
-  ansible.builtin.shell: >
-    systemctl is-active {{ chrony_systemd_timesyncd_service_name }}.service ||
-    systemctl is-enabled {{ chrony_systemd_timesyncd_service_name }}.service
+  ansible.builtin.systemd:
+    name: "{{ chrony_systemd_timesyncd_service_name }}"
   register: _systemd_timesyncd_service_check_
   failed_when: false
-  changed_when: false
+  check_mode: true
 
-- name: Chrony | prerequisites | Stop and disable systemd-timesyncd service if running
+- name: 🛑 Chrony | prerequisites | Stop and disable systemd-timesyncd service if running
   become: true
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: "{{ chrony_systemd_timesyncd_service_name }}"
     state: stopped
     enabled: false
+    daemon_reload: true
   when: >
     not ansible_check_mode and
-    _systemd_timesyncd_service_check_.rc is defined and
-    _systemd_timesyncd_service_check_.rc == 0
+    _systemd_timesyncd_service_check_.status is defined and
+    _systemd_timesyncd_service_check_.status.ActiveState in ['active', 'activating']
