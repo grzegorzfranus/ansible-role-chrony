@@ -18,7 +18,7 @@
 # -----------------------------------------------------------------------------
 # 1. General Settings Assertions
 # -----------------------------------------------------------------------------
-- name: 🧪 Chrony | assert | Validate role action parameter
+- name: Chrony | assert | Validate role action parameter
   ansible.builtin.assert:
     that:
       - chrony_role_action is defined
@@ -27,7 +27,7 @@
     fail_msg: "❌ Invalid role action '{{ chrony_role_action | default('undefined') }}'. Must be one of: all, prerequisites, install, configure, logrotate, upgrade"
     success_msg: "✅ Role action parameter is valid: {{ chrony_role_action }}"
 
-- name: 🧪 Chrony | assert | Validate service enabled parameter
+- name: Chrony | assert | Validate service enabled parameter
   ansible.builtin.assert:
     that:
       - chrony_service_enabled is defined
@@ -35,7 +35,7 @@
     fail_msg: "❌ Invalid service enabled setting '{{ chrony_service_enabled | default('undefined') }}'. Must be boolean (true/false)"
     success_msg: "✅ Service enabled parameter is valid: {{ chrony_service_enabled }}"
 
-- name: 🧪 Chrony | assert | Validate logrotate configuration flag
+- name: Chrony | assert | Validate logrotate configuration flag
   ansible.builtin.assert:
     that:
       - chrony_configure_logrotate is defined
@@ -43,7 +43,7 @@
     fail_msg: "❌ Invalid logrotate configuration '{{ chrony_configure_logrotate | default('undefined') }}'. Must be boolean (true/false)"
     success_msg: "✅ Logrotate configuration flag is valid: {{ chrony_configure_logrotate }}"
 
-- name: 🧪 Chrony | assert | Validate test execution flag
+- name: Chrony | assert | Validate test execution flag
   ansible.builtin.assert:
     that:
       - chrony_run_test is defined
@@ -54,7 +54,7 @@
 # -----------------------------------------------------------------------------
 # 2. Logrotate Settings Assertions
 # -----------------------------------------------------------------------------
-- name: 🧪 Chrony | assert | Validate logrotate options
+- name: Chrony | assert | Validate logrotate options
   ansible.builtin.assert:
     that:
       - chrony_logrotate_options is defined
@@ -83,7 +83,7 @@
 # -----------------------------------------------------------------------------
 # 3. NTP Server Settings Assertions
 # -----------------------------------------------------------------------------
-- name: 🧪 Chrony | assert | Validate NTP source mode
+- name: Chrony | assert | Validate NTP source mode
   ansible.builtin.assert:
     that:
       - chrony_ntp_source_mode is defined
@@ -92,7 +92,7 @@
     fail_msg: "❌ Invalid NTP source mode '{{ chrony_ntp_source_mode | default('undefined') }}'. Must be 'pool' or 'server'"
     success_msg: "✅ NTP source mode is valid: {{ chrony_ntp_source_mode }}"
 
-- name: 🧪 Chrony | assert | Validate NTP server list
+- name: Chrony | assert | Validate NTP server list
   ansible.builtin.assert:
     that:
       - chrony_ntp_servers is defined
@@ -100,7 +100,7 @@
     fail_msg: "❌ NTP server list is empty or undefined. Must provide at least one NTP server"
     success_msg: "✅ NTP server list is valid with {{ chrony_ntp_servers | length }} servers"
 
-- name: 🧪 Chrony | assert | Validate real-time clock sync setting
+- name: Chrony | assert | Validate real-time clock sync setting
   ansible.builtin.assert:
     that:
       - chrony_rtcsync_enable is defined
@@ -108,7 +108,7 @@
     fail_msg: "❌ Invalid RTC sync setting '{{ chrony_rtcsync_enable | default('undefined') }}'. Must be boolean (true/false)"
     success_msg: "✅ Real-time clock sync setting is valid: {{ chrony_rtcsync_enable }}"
 
-- name: 🧪 Chrony | assert | Validate maximum distance threshold
+- name: Chrony | assert | Validate maximum distance threshold
   ansible.builtin.assert:
     that:
       - chrony_maxdistance is defined
@@ -118,7 +118,7 @@
     fail_msg: "❌ Invalid max distance '{{ chrony_maxdistance | default('undefined') }}'. Must be between 0 and 16.0 seconds"
     success_msg: "✅ Maximum distance threshold is valid: {{ chrony_maxdistance }} seconds"
 
-- name: 🧪 Chrony | assert | Validate NTS dump directory
+- name: Chrony | assert | Validate NTS dump directory
   ansible.builtin.assert:
     that:
       - chrony_ntsdumpdir is defined
@@ -128,7 +128,7 @@
     fail_msg: "❌ Invalid NTS dump directory '{{ chrony_ntsdumpdir | default('undefined') }}'. Must be a non-empty absolute path"
     success_msg: "✅ NTS dump directory is valid: {{ chrony_ntsdumpdir }}"
 
-- name: 🧪 Chrony | assert | Validate minimum sources setting
+- name: Chrony | assert | Validate minimum sources setting
   ansible.builtin.assert:
     that:
       - chrony_num_minsources is defined
@@ -138,7 +138,7 @@
     fail_msg: "❌ Invalid minimum sources setting '{{ chrony_num_minsources | default('undefined') }}'. Must be between 1 and 10"
     success_msg: "✅ Minimum sources setting is valid: {{ chrony_num_minsources }}"
 
-- name: 🧪 Chrony | assert | Validate maximum update skew
+- name: Chrony | assert | Validate maximum update skew
   ansible.builtin.assert:
     that:
       - chrony_maxupdateskew is defined
@@ -148,7 +148,7 @@
     fail_msg: "❌ Invalid max update skew '{{ chrony_maxupdateskew | default('undefined') }}'. Must be between 0 and 1000.0 ppm"
     success_msg: "✅ Maximum update skew is valid: {{ chrony_maxupdateskew }} ppm"
 
-- name: 🧪 Chrony | assert | Validate step threshold configuration
+- name: Chrony | assert | Validate step threshold configuration
   ansible.builtin.assert:
     that:
       - chrony_makestep is defined
@@ -157,7 +157,7 @@
     fail_msg: "❌ Invalid step threshold '{{ chrony_makestep | default('undefined') }}'. Must be in format 'threshold limit' (e.g., '1.0 3')"
     success_msg: "✅ Step threshold configuration is valid: {{ chrony_makestep }}"
 
-- name: 🧪 Chrony | assert | Validate log change threshold
+- name: Chrony | assert | Validate log change threshold
   ansible.builtin.assert:
     that:
       - chrony_logchange is defined
@@ -168,7 +168,7 @@
 # -----------------------------------------------------------------------------
 # 4. Package and Service Settings Assertions
 # -----------------------------------------------------------------------------
-- name: 🧪 Chrony | assert | Validate package name
+- name: Chrony | assert | Validate package name
   ansible.builtin.assert:
     that:
       - chrony_package_name is defined
@@ -178,7 +178,7 @@
     fail_msg: "❌ Invalid package name '{{ chrony_package_name | default('undefined') }}'. Must contain only lowercase letters, numbers, and hyphens"
     success_msg: "✅ Package name is valid: {{ chrony_package_name }}"
 
-- name: 🧪 Chrony | assert | Validate service name
+- name: Chrony | assert | Validate service name
   ansible.builtin.assert:
     that:
       - chrony_service_name is defined
@@ -188,7 +188,7 @@
     fail_msg: "❌ Invalid service name '{{ chrony_service_name | default('undefined') }}'. Must contain only lowercase letters, numbers, and hyphens"
     success_msg: "✅ Service name is valid: {{ chrony_service_name }}"
 
-- name: 🧪 Chrony | assert | Validate NTP service name
+- name: Chrony | assert | Validate NTP service name
   ansible.builtin.assert:
     that:
       - chrony_ntp_service_name is defined
@@ -198,7 +198,7 @@
     fail_msg: "❌ Invalid NTP service name '{{ chrony_ntp_service_name | default('undefined') }}'. Must contain only lowercase letters, numbers, and hyphens"
     success_msg: "✅ NTP service name is valid: {{ chrony_ntp_service_name }}"
 
-- name: 🧪 Chrony | assert | Validate systemd-timesyncd service name
+- name: Chrony | assert | Validate systemd-timesyncd service name
   ansible.builtin.assert:
     that:
       - chrony_systemd_timesyncd_service_name is defined
@@ -211,7 +211,7 @@
 # -----------------------------------------------------------------------------
 # 5. File Path and Permission Assertions
 # -----------------------------------------------------------------------------
-- name: 🧪 Chrony | assert | Validate configuration file path
+- name: Chrony | assert | Validate configuration file path
   ansible.builtin.assert:
     that:
       - chrony_config_path is defined
@@ -221,7 +221,7 @@
     fail_msg: "❌ Invalid config path '{{ chrony_config_path | default('undefined') }}'. Must be an absolute path"
     success_msg: "✅ Configuration file path is valid: {{ chrony_config_path }}"
 
-- name: 🧪 Chrony | assert | Validate log directory owner
+- name: Chrony | assert | Validate log directory owner
   ansible.builtin.assert:
     that:
       - chrony_log_directory_user is defined
@@ -231,7 +231,7 @@
     fail_msg: "❌ Invalid log directory owner '{{ chrony_log_directory_user | default('undefined') }}'. Must contain only lowercase letters, numbers, underscores, and hyphens"
     success_msg: "✅ Log directory owner is valid: {{ chrony_log_directory_user }}"
 
-- name: 🧪 Chrony | assert | Validate drift file path
+- name: Chrony | assert | Validate drift file path
   ansible.builtin.assert:
     that:
       - chrony_driftfile_path is defined
@@ -241,7 +241,7 @@
     fail_msg: "❌ Invalid drift file path '{{ chrony_driftfile_path | default('undefined') }}'. Must be a non-empty absolute path"
     success_msg: "✅ Drift file path is valid: {{ chrony_driftfile_path }}"
 
-- name: 🧪 Chrony | assert | Validate key file path
+- name: Chrony | assert | Validate key file path
   ansible.builtin.assert:
     that:
       - chrony_keyfile_path is defined
@@ -251,7 +251,7 @@
     fail_msg: "❌ Invalid key file path '{{ chrony_keyfile_path | default('undefined') }}'. Must be a non-empty absolute path"
     success_msg: "✅ Key file path is valid: {{ chrony_keyfile_path }}"
 
-- name: 🧪 Chrony | assert | Validate logrotate configuration path
+- name: Chrony | assert | Validate logrotate configuration path
   ansible.builtin.assert:
     that:
       - chrony_logrotate_config_path is defined
@@ -264,7 +264,7 @@
 # -----------------------------------------------------------------------------
 # 6. Advanced Tuning Assertions
 # -----------------------------------------------------------------------------
-- name: 🧪 Chrony | assert | Validate hardware settings
+- name: Chrony | assert | Validate hardware settings
   ansible.builtin.assert:
     that:
       - chrony_hardware_settings is defined
@@ -284,7 +284,7 @@
     fail_msg: "❌ Invalid hardware settings configuration. Must be a mapping with all required fields"
     success_msg: "✅ Hardware settings are valid with HW timestamp: {{ chrony_hardware_settings.enable_hw_timestamp }}"
 
-- name: 🧪 Chrony | assert | Validate system settings
+- name: Chrony | assert | Validate system settings
   ansible.builtin.assert:
     that:
       - chrony_system_settings is defined
@@ -294,7 +294,7 @@
     fail_msg: "❌ Invalid system settings configuration. Must be a mapping with all required fields"
     success_msg: "✅ System settings are valid with dump directory: {{ chrony_system_settings.dumpdir }}"
 
-- name: 🧪 Chrony | assert | Validate temperature compensation settings
+- name: Chrony | assert | Validate temperature compensation settings
   ansible.builtin.assert:
     that:
       - chrony_temp_compensation is defined
@@ -310,7 +310,7 @@
     fail_msg: "❌ Invalid temperature compensation settings. Must be a mapping with all required fields"
     success_msg: "✅ Temperature compensation settings are valid with enable: {{ chrony_temp_compensation.enable }}"
 
-- name: 🧪 Chrony | assert | Validate client settings
+- name: Chrony | assert | Validate client settings
   ansible.builtin.assert:
     that:
       - chrony_client_settings is defined
@@ -330,7 +330,7 @@
     fail_msg: "❌ Invalid client settings configuration. Must be a mapping with all required fields"
     success_msg: "✅ Client settings are valid with DHCP usage: {{ chrony_client_settings.use_dhcp }}"
 
-- name: 🧪 Chrony | assert | Validate authentication settings
+- name: Chrony | assert | Validate authentication settings
   ansible.builtin.assert:
     that:
       - chrony_auth_settings is defined
@@ -342,7 +342,7 @@
     fail_msg: "❌ Invalid authentication settings. Must be a mapping with enable (bool) and selectmode (require/prefer/ignore)"
     success_msg: "✅ Authentication settings are valid with selectmode: {{ chrony_auth_settings.selectmode }}"
 
-- name: 🧪 Chrony | assert | Validate leap second settings
+- name: Chrony | assert | Validate leap second settings
   ansible.builtin.assert:
     that:
       - chrony_leapsec_settings is defined

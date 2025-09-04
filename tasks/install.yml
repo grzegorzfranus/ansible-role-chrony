@@ -12,7 +12,7 @@
 # -----------------------------------------------------------------------------
 # 1. Package Installation
 # -----------------------------------------------------------------------------
-- name: 📦 Chrony | install | Install Chrony package
+- name: Chrony | install | Install Chrony package
   become: true
   ansible.builtin.package:
     name: "{{ chrony_package_name }}"

@@ -14,7 +14,7 @@
 #   restart chrony - Triggered when Chrony configuration changes
 # =============================================================================
 
-- name: 🔄 Chrony | handlers | Restart Chrony service
+- name: Chrony | handlers | Restart Chrony service
   become: true
   ansible.builtin.systemd:
     name: "{{ chrony_service_name }}"

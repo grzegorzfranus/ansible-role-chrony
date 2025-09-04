@@ -14,13 +14,13 @@
 # -----------------------------------------------------------------------------
 # 1. Handler Flush
 # -----------------------------------------------------------------------------
-- name: 🔄 Chrony | test | Flush handlers
+- name: Chrony | test | Flush handlers
   ansible.builtin.meta: flush_handlers
 
 # -----------------------------------------------------------------------------
 # 2. Time Synchronization Test
 # -----------------------------------------------------------------------------
-- name: 🚀 Chrony | test | Force NTP sync
+- name: Chrony | test | Force NTP sync
   become: true
   ansible.builtin.command: chronyc makestep
   register: _chrony_makestep_
@@ -33,20 +33,20 @@
     - "'not synchronised' not in _chrony_makestep_.stdout.lower()"
     - "'no suitable source' not in _chrony_makestep_.stdout.lower()"
 
-- name: 🧪 Chrony | test | Ensure system is NTP time synced
+- name: Chrony | test | Ensure system is NTP time synced
   ansible.builtin.command: chronyc waitsync 30
   changed_when: false
 
 # -----------------------------------------------------------------------------
 # 3. Service Status Verification
 # -----------------------------------------------------------------------------
-- name: 🔍 Chrony | test | Check if time is synchronized with server
+- name: Chrony | test | Check if time is synchronized with server
   ansible.builtin.command: chronyc tracking
   changed_when: false
   failed_when: _chrony_tracking_.rc != 0
   register: _chrony_tracking_
 
-- name: ✅ Chrony | test | Show tracking details
+- name: Chrony | test | Show tracking details
   ansible.builtin.debug:
     msg: >
       Tracking Output:

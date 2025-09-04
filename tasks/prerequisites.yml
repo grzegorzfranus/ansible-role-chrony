@@ -13,14 +13,14 @@
 # -----------------------------------------------------------------------------
 # 1. NTP Service Management
 # -----------------------------------------------------------------------------
-- name: 🔍 Chrony | prerequisites | Check if NTP service exists
+- name: Chrony | prerequisites | Check if NTP service exists
   ansible.builtin.systemd:
     name: "{{ chrony_ntp_service_name }}"
   register: _ntp_service_check_
   failed_when: false
   check_mode: true
 
-- name: 🛑 Chrony | prerequisites | Stop and disable NTP service if running
+- name: Chrony | prerequisites | Stop and disable NTP service if running
   become: true
   ansible.builtin.systemd:
     name: "{{ chrony_ntp_service_name }}"
@@ -35,14 +35,14 @@
 # -----------------------------------------------------------------------------
 # 2. Systemd-timesyncd Service Management
 # -----------------------------------------------------------------------------
-- name: 🔍 Chrony | prerequisites | Check if systemd-timesyncd service exists
+- name: Chrony | prerequisites | Check if systemd-timesyncd service exists
   ansible.builtin.systemd:
     name: "{{ chrony_systemd_timesyncd_service_name }}"
   register: _systemd_timesyncd_service_check_
   failed_when: false
   check_mode: true
 
-- name: 🛑 Chrony | prerequisites | Stop and disable systemd-timesyncd service if running
+- name: Chrony | prerequisites | Stop and disable systemd-timesyncd service if running
   become: true
   ansible.builtin.systemd:
     name: "{{ chrony_systemd_timesyncd_service_name }}"

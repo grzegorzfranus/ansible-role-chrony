@@ -20,7 +20,7 @@
 # -----------------------------------------------------------------------------
 # 1. OS-Specific Variables
 # -----------------------------------------------------------------------------
-- name: 📂 Chrony | include_vars | Gather OS specific variables
+- name: Chrony | include_vars | Gather OS specific variables
   ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
   vars:
     params:
@@ -42,29 +42,28 @@
 # -----------------------------------------------------------------------------
 # 2. Variable Validation
 # -----------------------------------------------------------------------------
-- name: 🧪 Chrony | assert | Validate role variables and requirements
+- name: Chrony | assert | Validate role variables and requirements
   ansible.builtin.include_tasks: assert.yml
   run_once: true
   tags:
     - always
     - validate
-    - check
 
 # -----------------------------------------------------------------------------
 # 3. System Prerequisites
 # -----------------------------------------------------------------------------
-- name: 🛠️ Chrony | prerequisites | Verify system prerequisites
+- name: Chrony | prerequisites | Verify system prerequisites
   ansible.builtin.include_tasks: prerequisites.yml
   when: >
     chrony_role_action in ['all', 'prerequisites']
   tags:
     - setup
-    - prerequisites
+    - requirements
 
 # -----------------------------------------------------------------------------
 # 4. Package Installation
 # -----------------------------------------------------------------------------
-- name: 📦 Chrony | install | Install Chrony package
+- name: Chrony | install | Install Chrony package
   ansible.builtin.include_tasks: install.yml
   when: >
     chrony_role_action in ['all', 'install']
@@ -75,7 +74,7 @@
 # -----------------------------------------------------------------------------
 # 5. Service Configuration
 # -----------------------------------------------------------------------------
-- name: 🌐 Chrony | configure | Configure Chrony service
+- name: Chrony | configure | Configure Chrony service
   ansible.builtin.include_tasks: configure.yml
   when: >
     chrony_role_action in ['all', 'configure']
@@ -86,7 +85,7 @@
 # -----------------------------------------------------------------------------
 # 6. Logrotate Configuration (Optional)
 # -----------------------------------------------------------------------------
-- name: 📝 Chrony | logrotate | Configure logrotate for Chrony service
+- name: Chrony | logrotate | Configure logrotate for Chrony service
   ansible.builtin.include_tasks: logrotate.yml
   when: >
     chrony_role_action in ['all', 'configure', 'logrotate'] and
@@ -98,18 +97,17 @@
 # -----------------------------------------------------------------------------
 # 7. Package Upgrade
 # -----------------------------------------------------------------------------
-- name: 🔄 Chrony | upgrade | Upgrade Chrony package
+- name: Chrony | upgrade | Upgrade Chrony package
   ansible.builtin.include_tasks: upgrade.yml
   when: >
     chrony_role_action in ['upgrade']
   tags:
     - upgrade
-    - never
 
 # -----------------------------------------------------------------------------
 # 8. Configuration Verification
 # -----------------------------------------------------------------------------
-- name: 🧪 Chrony | test | Verify time synchronization
+- name: Chrony | test | Verify time synchronization
   ansible.builtin.include_tasks: test.yml
   when: >
     chrony_role_action in ['all', 'configure', 'logrotate', 'upgrade' ] and
@@ -117,4 +115,3 @@
   tags:
     - test
     - verify
-    - check

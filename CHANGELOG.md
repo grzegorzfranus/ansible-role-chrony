@@ -5,6 +5,20 @@ All notable changes to this Chrony NTP role will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2025-09-04
+
+### Changed 🔄
+- Normalized all task and handler names to `Chrony | action | description` (removed emojis)
+- Updated tags in `tasks/main.yml` to use only allowed tags; replaced `prerequisites` with `requirements`
+
+### Fixed 🔧
+- Removed disallowed tags `check` and `never` to comply with role policy
+- Verified handler wiring: `notify: restart chrony` matches handler `listen: restart chrony`
+
+### Quality Improvements 📈
+- Added a rationale comment near Chrony template deployment about lack of config validate command
+- Confirmed lint passes with zero issues after changes
+
 ## [1.0.5] - 2025-08-06
 
 ### Fixed 🔧
