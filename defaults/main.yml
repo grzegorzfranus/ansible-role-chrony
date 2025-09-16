@@ -54,6 +54,9 @@ chrony_ntp_servers:
 # Enable kernel synchronization of the real-time clock (RTC)
 chrony_rtcsync_enable: true
 
+# Set RTC time to UTC
+chrony_rtconutc_enable: true
+
 # Maximum allowed root distance in seconds
 # Increase this if you have unreliable network connectivity
 chrony_maxdistance: 3.0

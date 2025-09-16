@@ -37,6 +37,11 @@ driftfile {{ chrony_driftfile_path }}
 rtcsync
 {% endif %}
 
+{% if chrony_rtconutc_enable %}
+# Set the RTC time to UTC
+rtconutc
+{% endif %}
+
 # Correct clock if offset exceeds threshold
 makestep {{ chrony_makestep }}
 
