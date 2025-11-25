@@ -5,6 +5,52 @@ All notable changes to this Chrony NTP role will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2025-11-25
+
+### Added ✅
+- **New `chrony_rtc_settings` section** - Dedicated configuration group for Real-Time Clock settings
+- **`rtcfile` support** - Added `rtcfile_enable` and `rtcfile_path` options for RTC drift tracking between reboots
+- **`rtcdevice` option** - Added support for custom RTC device path specification
+- **RTC validation** - Added assertion to warn/fail when `rtcautotrim` is enabled without `rtcfile` (per chrony documentation requirement)
+- **Comprehensive RTC assertions** - Added validation for all new RTC settings
+
+### Changed 🔄
+- **BREAKING: Moved `rtcautotrim` from `chrony_hardware_settings` to `chrony_rtc_settings`** - This correctly groups RTC-related settings together
+- **BREAKING: Moved `rtcsync` and `rtconutc` to `chrony_rtc_settings`** - Previously standalone variables, now part of the RTC settings group
+- **Renamed `rtcautotrim` to `rtcautotrim_enable` + `rtcautotrim_interval`** - Separate enable flag from interval value for better control
+- **Separated hardware timestamping from RTC settings** - `hwtimestamp` and `refclock` are now independent from RTC configuration
+- **Changed default for `enable_hw_timestamp`** - Changed from `true` to `false` (hardware timestamping requires specific NIC support)
+- **Reorganized template sections** - Added dedicated "Real-Time Clock (RTC) Configuration" section in chrony.conf
+
+### Fixed 🔧
+- **Fixed `rtcautotrim` being ineffective** - According to [chrony documentation](https://chrony-project.org/doc/3.4/chrony.conf.html), `rtcautotrim` is only effective with `rtcfile` directive. The role now properly requires `rtcfile_enable: true` for `rtcautotrim` to work
+- **Fixed incorrect grouping** - `rtcautotrim` was incorrectly placed under hardware timestamp settings, which are unrelated to RTC trimming
+
+### Removed ❌
+- **Removed `chrony_rtcsync_enable`** - Replaced by `chrony_rtc_settings.rtcsync_enable`
+- **Removed `chrony_rtconutc_enable`** - Replaced by `chrony_rtc_settings.rtconutc_enable`
+- **Removed `chrony_hardware_settings.rtcautotrim`** - Replaced by `chrony_rtc_settings.rtcautotrim_enable` and `chrony_rtc_settings.rtcautotrim_interval`
+
+### Migration Guide 📋
+If upgrading from 1.0.6, update your variables:
+
+```yaml
+# OLD (1.0.6)
+chrony_rtcsync_enable: true
+chrony_rtconutc_enable: true
+chrony_hardware_settings:
+  rtcautotrim: 30
+
+# NEW (1.0.7)
+chrony_rtc_settings:
+  rtcsync_enable: true
+  rtconutc_enable: true
+  rtcfile_enable: true        # Required for rtcautotrim to work!
+  rtcfile_path: "/var/lib/chrony/rtc"
+  rtcautotrim_enable: true
+  rtcautotrim_interval: 30
+```
+
 ## [1.0.6] - 2025-09-04
 
 ### Changed 🔄

@@ -116,8 +116,9 @@ chrony_ntp_servers:
   - "0.pool.ntp.org iburst minpoll 4 maxpoll 8"
   - "1.pool.ntp.org iburst minpoll 4 maxpoll 8"
   
-# Security settings
-chrony_rtcsync_enable: true
+# RTC settings
+chrony_rtc_settings:
+  rtcsync_enable: true
 chrony_maxdistance: 3.0
 ```
 
@@ -160,7 +161,6 @@ Customize for specific requirements:
 |----------|-------------|---------|
 | `chrony_ntp_source_mode` | Define how this host should operate (Options: 'pool', 'server') | `"server"` |
 | `chrony_ntp_servers` | List of NTP servers to sync with (with options like iburst, minpoll, maxpoll) | See defaults/main.yml |
-| `chrony_rtcsync_enable` | Enable kernel synchronization of the real-time clock (RTC) | `true` |
 | `chrony_maxdistance` | Maximum allowed root distance in seconds | `3.0` |
 | `chrony_ntsdumpdir` | Directory for storing NTS cookies and keys | `/var/lib/chrony` |
 | `chrony_num_minsources` | Minimum number of sources required for synchronization | `1` |
@@ -208,16 +208,29 @@ Customize for specific requirements:
 | `chrony_logrotate_options.copytruncate` | Don't use copy+truncate - use default move | `false` |
 | `chrony_logrotate_options.dateext` | Add date extension to rotated logs | `true` |
 
-### Hardware Settings
+### Real-Time Clock (RTC) Settings
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `chrony_hardware_settings.enable_hw_timestamp` | Enable hardware timestamping | `true` |
+| `chrony_rtc_settings.rtcsync_enable` | Enable kernel synchronization of RTC | `true` |
+| `chrony_rtc_settings.rtconutc_enable` | Set RTC time to UTC (recommended for Linux) | `true` |
+| `chrony_rtc_settings.rtcfile_enable` | Enable RTC tracking file for drift compensation | `false` |
+| `chrony_rtc_settings.rtcfile_path` | Path to RTC tracking file | `"/var/lib/chrony/rtc"` |
+| `chrony_rtc_settings.rtcautotrim_enable` | Enable automatic RTC trimming (**requires rtcfile!**) | `false` |
+| `chrony_rtc_settings.rtcautotrim_interval` | Interval in seconds for RTC trimming | `30` |
+| `chrony_rtc_settings.rtcdevice` | Custom RTC device path (empty = auto-detect) | `""` |
+
+> ⚠️ **Important**: According to [chrony documentation](https://chrony-project.org/doc/3.4/chrony.conf.html), `rtcautotrim` is **only effective** when `rtcfile` is enabled. The role validates this and will fail if `rtcautotrim_enable` is `true` but `rtcfile_enable` is `false`.
+
+### Hardware Timestamping & Reference Clock
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `chrony_hardware_settings.enable_hw_timestamp` | Enable hardware timestamping for high accuracy | `false` |
 | `chrony_hardware_settings.hw_timestamp_interfaces` | Network interfaces for hardware timestamping | `"*"` |
-| `chrony_hardware_settings.refclock_enable` | Enable reference clock | `false` |
+| `chrony_hardware_settings.refclock_enable` | Enable reference clock (e.g. PPS device) | `false` |
 | `chrony_hardware_settings.refclock_pps` | Path to PPS device | `"/dev/pps0"` |
 | `chrony_hardware_settings.refclock_precision` | Precision for reference clock | `"1e-7"` |
-| `chrony_hardware_settings.rtcautotrim` | Interval for automatic RTC trimming | `30` |
 
 ### System Settings
 
@@ -439,7 +452,6 @@ ansible-role-chrony/
           - "time.cloudflare.com iburst"
         
         # Advanced Time Settings
-        chrony_rtcsync_enable: true
         chrony_maxdistance: 2.0
         chrony_num_minsources: 2
         chrony_maxupdateskew: 100.0

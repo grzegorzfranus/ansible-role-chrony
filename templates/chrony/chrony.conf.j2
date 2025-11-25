@@ -32,16 +32,6 @@ server {{ server }}
 # Path to the drift file for persistent clock correction
 driftfile {{ chrony_driftfile_path }}
 
-{% if chrony_rtcsync_enable %}
-# Synchronize system clock to RTC on boot and periodically
-rtcsync
-{% endif %}
-
-{% if chrony_rtconutc_enable %}
-# Set the RTC time to UTC
-rtconutc
-{% endif %}
-
 # Correct clock if offset exceeds threshold
 makestep {{ chrony_makestep }}
 
@@ -111,23 +101,48 @@ logchange {{ chrony_logchange }}
 {% endif %}
 
 # -----------------------------------------------------------------------------
-# 6. Advanced Tuning
+# 6. Real-Time Clock (RTC) Configuration
 # -----------------------------------------------------------------------------
-{% if chrony_hardware_settings.enable_hw_timestamp %}
-# Hardware timestamp configuration
-hwtimestamp {{ chrony_hardware_settings.hw_timestamp_interfaces }}
+{% if chrony_rtc_settings.rtcsync_enable | default(true) %}
+# Synchronize system clock to RTC on boot and periodically
+rtcsync
+{% endif %}
 
-{% if chrony_hardware_settings.refclock_enable %}
-# Reference clock configuration
+{% if chrony_rtc_settings.rtconutc_enable | default(true) %}
+# Set the RTC time to UTC
+rtconutc
+{% endif %}
+
+{% if chrony_rtc_settings.rtcdevice | default('') | length > 0 %}
+# Custom RTC device path
+rtcdevice {{ chrony_rtc_settings.rtcdevice }}
+{% endif %}
+
+{% if chrony_rtc_settings.rtcfile_enable | default(false) %}
+# RTC tracking file for drift compensation between reboots
+rtcfile {{ chrony_rtc_settings.rtcfile_path | default('/var/lib/chrony/rtc') }}
+
+{% if chrony_rtc_settings.rtcautotrim_enable | default(false) %}
+# Automatic RTC trimming (requires rtcfile to be effective)
+rtcautotrim {{ chrony_rtc_settings.rtcautotrim_interval | default(30) }}
+{% endif %}
+{% endif %}
+
+# -----------------------------------------------------------------------------
+# 7. Hardware Timestamping & Reference Clock
+# -----------------------------------------------------------------------------
+{% if chrony_hardware_settings.enable_hw_timestamp | default(false) %}
+# Hardware timestamp configuration for high accuracy
+hwtimestamp {{ chrony_hardware_settings.hw_timestamp_interfaces | default('*') }}
+{% endif %}
+
+{% if chrony_hardware_settings.refclock_enable | default(false) %}
+# Reference clock configuration (e.g. PPS device)
 refclock PPS {{ chrony_hardware_settings.refclock_pps }} refid PPS precision {{ chrony_hardware_settings.refclock_precision }}
 {% endif %}
 
-# Kernel RTC synchronization
-rtcautotrim {{ chrony_hardware_settings.rtcautotrim }}
-{% endif %}
-
 # -----------------------------------------------------------------------------
-# 7. System Performance
+# 8. System Performance
 # -----------------------------------------------------------------------------
 # Clock state directory
 dumpdir {{ chrony_system_settings.dumpdir }}
@@ -138,7 +153,7 @@ tempcomp {{ chrony_temp_compensation.sensor_file }} {{ chrony_temp_compensation.
 {% endif %}
 
 # -----------------------------------------------------------------------------
-# 8. NTP Client Options
+# 9. NTP Client Options
 # -----------------------------------------------------------------------------
 {% if chrony_client_settings.use_dhcp %}
 # Acquire servers from DHCP

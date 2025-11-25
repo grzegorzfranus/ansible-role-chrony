@@ -12,9 +12,10 @@
 #   4. Leap Second Settings
 #   5. Chrony Logging
 #   6. Logrotate Settings
-#   7. Advanced Tuning
-#   8. System Performance
-#   9. NTP Client Options
+#   7. Real-Time Clock (RTC) Settings
+#   8. Hardware Timestamping & Reference Clock
+#   9. System Performance
+#  10. NTP Client Options
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -50,12 +51,6 @@ chrony_ntp_servers:
   - "1.pool.ntp.org iburst minpoll 4 maxpoll 8"
   - "2.pool.ntp.org iburst minpoll 4 maxpoll 8"
   - "3.pool.ntp.org iburst minpoll 4 maxpoll 8"
-
-# Enable kernel synchronization of the real-time clock (RTC)
-chrony_rtcsync_enable: true
-
-# Set RTC time to UTC
-chrony_rtconutc_enable: true
 
 # Maximum allowed root distance in seconds
 # Increase this if you have unreliable network connectivity
@@ -127,18 +122,31 @@ chrony_logrotate_options:
   dateext: true                              # Add date extension to rotated logs
 
 # -----------------------------------------------------------------------------
-# 7. Advanced Tuning
+# 7. Real-Time Clock (RTC) Settings
+# -----------------------------------------------------------------------------
+# Configuration for the hardware Real-Time Clock
+# Note: rtcautotrim is ONLY effective when rtcfile is enabled (per chrony documentation)
+chrony_rtc_settings:
+  rtcsync_enable: true                # Enable kernel synchronization of RTC
+  rtconutc_enable: true               # Set RTC time to UTC (recommended for Linux-only systems)
+  rtcfile_enable: false               # Enable RTC tracking file for drift compensation
+  rtcfile_path: "/var/lib/chrony/rtc" # Path to RTC tracking file (requires rtcfile_enable)
+  rtcautotrim_enable: false           # Enable automatic RTC trimming (REQUIRES rtcfile_enable!)
+  rtcautotrim_interval: 30            # Interval in seconds for RTC trimming
+  rtcdevice: ""                       # RTC device path (empty = auto-detect, e.g. "/dev/rtc")
+
+# -----------------------------------------------------------------------------
+# 8. Hardware Timestamping & Reference Clock
 # -----------------------------------------------------------------------------
 chrony_hardware_settings:
-  enable_hw_timestamp: true           # Enable hardware timestamping (recommended for high accuracy)
+  enable_hw_timestamp: false          # Enable hardware timestamping (for high accuracy setups)
   hw_timestamp_interfaces: "*"        # Network interfaces for hardware timestamping ('*' = all)
   refclock_enable: false              # Enable reference clock (e.g. PPS device)
   refclock_pps: "/dev/pps0"           # Path to PPS device (if refclock_enable is true)
   refclock_precision: "1e-7"          # Precision for reference clock (seconds)
-  rtcautotrim: 30                     # Interval (seconds) for automatic RTC trimming
 
 # -----------------------------------------------------------------------------
-# 8. System Performance
+# 9. System Performance
 # -----------------------------------------------------------------------------
 chrony_system_settings:
   dumpdir: "/var/lib/chrony"          # Directory for storing clock state dumps
@@ -150,7 +158,7 @@ chrony_temp_compensation:
   config_file: "/etc/chrony/tempcomp" # Path to tempcomp config file
 
 # -----------------------------------------------------------------------------
-# 9. NTP Client Options
+# 10. NTP Client Options
 # -----------------------------------------------------------------------------
 chrony_client_settings:
   use_dhcp: false                     # Use NTP servers provided by DHCP (true/false)

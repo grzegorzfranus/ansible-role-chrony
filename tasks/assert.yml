@@ -100,14 +100,6 @@
     fail_msg: "❌ NTP server list is empty or undefined. Must provide at least one NTP server"
     success_msg: "✅ NTP server list is valid with {{ chrony_ntp_servers | length }} servers"
 
-- name: Chrony | assert | Validate real-time clock sync setting
-  ansible.builtin.assert:
-    that:
-      - chrony_rtcsync_enable is defined
-      - chrony_rtcsync_enable is boolean
-    fail_msg: "❌ Invalid RTC sync setting '{{ chrony_rtcsync_enable | default('undefined') }}'. Must be boolean (true/false)"
-    success_msg: "✅ Real-time clock sync setting is valid: {{ chrony_rtcsync_enable }}"
-
 - name: Chrony | assert | Validate maximum distance threshold
   ansible.builtin.assert:
     that:
@@ -262,7 +254,60 @@
     success_msg: "✅ Logrotate configuration path is valid: {{ chrony_logrotate_config_path }}"
 
 # -----------------------------------------------------------------------------
-# 6. Advanced Tuning Assertions
+# 6. RTC Settings Assertions
+# -----------------------------------------------------------------------------
+- name: Chrony | assert | Validate RTC settings structure
+  ansible.builtin.assert:
+    that:
+      - chrony_rtc_settings is defined
+      - chrony_rtc_settings is mapping
+      - chrony_rtc_settings.rtcsync_enable is defined
+      - chrony_rtc_settings.rtcsync_enable is boolean
+      - chrony_rtc_settings.rtconutc_enable is defined
+      - chrony_rtc_settings.rtconutc_enable is boolean
+      - chrony_rtc_settings.rtcfile_enable is defined
+      - chrony_rtc_settings.rtcfile_enable is boolean
+      - chrony_rtc_settings.rtcfile_path is defined
+      - chrony_rtc_settings.rtcfile_path is string
+      - chrony_rtc_settings.rtcautotrim_enable is defined
+      - chrony_rtc_settings.rtcautotrim_enable is boolean
+      - chrony_rtc_settings.rtcautotrim_interval is defined
+      - chrony_rtc_settings.rtcautotrim_interval is number
+    fail_msg: "❌ Invalid RTC settings configuration. Must be a mapping with all required fields"
+    success_msg: "✅ RTC settings are valid with rtcsync: {{ chrony_rtc_settings.rtcsync_enable }}"
+
+- name: Chrony | assert | Validate rtcfile path when enabled
+  ansible.builtin.assert:
+    that:
+      - chrony_rtc_settings.rtcfile_path | length > 0
+      - chrony_rtc_settings.rtcfile_path is search('^/')
+    fail_msg: "❌ Invalid RTC file path '{{ chrony_rtc_settings.rtcfile_path | default('undefined') }}'. Must be a non-empty absolute path"
+    success_msg: "✅ RTC file path is valid: {{ chrony_rtc_settings.rtcfile_path }}"
+  when: chrony_rtc_settings.rtcfile_enable | default(false)
+
+- name: Chrony | assert | Warn if rtcautotrim is enabled without rtcfile
+  ansible.builtin.assert:
+    that:
+      - chrony_rtc_settings.rtcfile_enable | default(false)
+    fail_msg: |
+      ⚠️ WARNING: rtcautotrim is enabled but rtcfile is disabled!
+      According to chrony documentation, 'rtcautotrim' is ONLY effective with 'rtcfile' directive.
+      Please set 'chrony_rtc_settings.rtcfile_enable: true' for rtcautotrim to work.
+      See: https://chrony-project.org/doc/3.4/chrony.conf.html
+    success_msg: "✅ rtcautotrim configuration is valid (rtcfile is enabled)"
+  when: chrony_rtc_settings.rtcautotrim_enable | default(false)
+
+- name: Chrony | assert | Validate rtcautotrim interval
+  ansible.builtin.assert:
+    that:
+      - chrony_rtc_settings.rtcautotrim_interval > 0
+      - chrony_rtc_settings.rtcautotrim_interval <= 86400
+    fail_msg: "❌ Invalid rtcautotrim interval '{{ chrony_rtc_settings.rtcautotrim_interval }}'. Must be between 1 and 86400 seconds"
+    success_msg: "✅ rtcautotrim interval is valid: {{ chrony_rtc_settings.rtcautotrim_interval }} seconds"
+  when: chrony_rtc_settings.rtcautotrim_enable | default(false)
+
+# -----------------------------------------------------------------------------
+# 7. Hardware Settings Assertions
 # -----------------------------------------------------------------------------
 - name: Chrony | assert | Validate hardware settings
   ansible.builtin.assert:
@@ -279,8 +324,6 @@
       - chrony_hardware_settings.refclock_pps is string
       - chrony_hardware_settings.refclock_precision is defined
       - chrony_hardware_settings.refclock_precision is string
-      - chrony_hardware_settings.rtcautotrim is defined
-      - chrony_hardware_settings.rtcautotrim is number
     fail_msg: "❌ Invalid hardware settings configuration. Must be a mapping with all required fields"
     success_msg: "✅ Hardware settings are valid with HW timestamp: {{ chrony_hardware_settings.enable_hw_timestamp }}"
 
