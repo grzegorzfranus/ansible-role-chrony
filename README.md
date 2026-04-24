@@ -19,6 +19,18 @@ This Ansible role installs and configures Chrony, a versatile implementation of 
 - 📝 **Configuration Backup**: Safe configuration deployment with rollback capability
 - 🧪 **Container Testing**: Full Molecule test suite for CI/CD integration
 
+## 📋 Role Properties
+
+| Property | Value |
+|---|---|
+| **Idempotent** | Yes — second run produces zero changes |
+| **Atomic** | No — multi-step: prerequisites → install → configure → verify |
+| **Check Mode** | Partial — install and configure phases supported |
+| **Roll-back** | Configuration files backed up automatically (`backup: true`) |
+| **Unit of Automation** | NTP time synchronization service lifecycle management |
+| **Outcome** | Chrony NTP service installed, configured, enabled, and time-synchronized |
+| **Argument Specification** | Defined in [`meta/argument_specs.yml`](meta/argument_specs.yml) |
+
 ## 🎯 Architecture
 
 The role provides flexible time synchronization architecture supporting both:
@@ -42,7 +54,7 @@ External NTP Servers ←→ Chrony Server ←→ Local Clients
 List of officially supported operating systems:
 | OS Family | Version | Status |
 |-----------|---------|---------|
-| Ubuntu | 24.04 (Focal) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
+| Ubuntu | 24.04 (Noble) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Ubuntu | 22.04 (Jammy) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Debian | 12 (Bookworm) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Debian | 11 (Bullseye) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
@@ -132,7 +144,7 @@ Customize for specific requirements:
   hosts: all
   become: true
   vars:
-    chrony_ntp_source_mode: "client"
+    chrony_ntp_source_mode: "pool"
     chrony_configure_logrotate: true
     chrony_log_enable: true
     chrony_hardware_settings:
@@ -148,12 +160,12 @@ Customize for specific requirements:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `chrony_role_action` | Define which parts of the role to execute (Options: 'all', 'install', 'config') | `"all"` |
-| `chrony_service_name` | Name of the Chrony service | `chrony` |
+| `chrony_role_action` | Define which parts of the role to execute (Options: 'all', 'prerequisites', 'install', 'configure', 'logrotate', 'upgrade') | `"all"` |
 | `chrony_service_enabled` | Whether to enable Chrony service | `true` |
-| `chrony_service_state` | Desired state of Chrony service | `started` |
 | `chrony_configure_logrotate` | Enable/disable logrotate configuration for Chrony logs | `false` |
 | `chrony_run_test` | Enable test mode (useful for debugging) | `false` |
+
+> **Note**: Service name, config path, package name, and other OS-specific values are set automatically via internal `__chrony_*` variables in `vars/{os_family}.yml`. See [`meta/argument_specs.yml`](meta/argument_specs.yml) for the full argument specification.
 
 ### System Clock Management
 
@@ -166,13 +178,11 @@ Customize for specific requirements:
 | `chrony_num_minsources` | Minimum number of sources required for synchronization | `1` |
 | `chrony_maxupdateskew` | Maximum allowed skew for updates (in ppm) | `100.0` |
 | `chrony_makestep` | Step clock if offset is larger than threshold (format: "<threshold> <limit>") | `"1.0 3"` |
-| `chrony_driftfile_path` | Path to the drift file | `/var/lib/chrony/drift` |
 
 ### Security Settings
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `chrony_keyfile_path` | Path to the keys file | `/etc/chrony/chrony.keys` |
 | `chrony_command_key_id` | Key ID for NTP commands | `1` |
 | `chrony_default_access` | Default access policy (deny/allow) | `"deny"` |
 | `chrony_auth_settings` | Authentication settings (enable, selectmode) | See defaults/main.yml |
@@ -415,19 +425,20 @@ ansible-role-chrony/
 
 ## 🏷️ Tags
 
+All tags are prefixed with `chrony_` to avoid collisions (per Red Hat CoP §3.1.4).
+
 - `always` - Tasks that always run (variable loading and validation)
-- `setup` - Setup tasks including OS-specific variables, requirements, installation, and configuration
-- `init` - Initial setup tasks
-- `validate` - Variable validation tasks
-- `check` - Validation and verification tasks
-- `requirements` - System requirements verification
-- `install` - Package installation tasks
-- `configure` - Service configuration tasks
-- `config` - Configuration related tasks
-- `logrotate` - Log rotation configuration tasks
-- `upgrade` - Package upgrade tasks (tagged with 'never' by default)
-- `test` - Testing and verification tasks
-- `verify` - Verification tasks
+- `chrony_setup` - Setup tasks including OS-specific variables, requirements, installation, and configuration
+- `chrony_init` - Initial setup tasks
+- `chrony_validate` - Variable validation tasks
+- `chrony_requirements` - System requirements verification
+- `chrony_install` - Package installation tasks
+- `chrony_configure` - Service configuration tasks
+- `chrony_config` - Configuration related tasks
+- `chrony_logrotate` - Log rotation configuration tasks
+- `chrony_upgrade` - Package upgrade tasks
+- `chrony_test` - Testing and verification tasks
+- `chrony_verify` - Verification tasks
 
 ## Example Playbook
 

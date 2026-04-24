@@ -1,53 +1,32 @@
 ---
-# =============================================================================
-# Ansible Role: Chrony - Service Testing
-# =============================================================================
-# This file contains tasks for testing the Chrony service functionality.
-# It verifies time synchronization and service operation.
-#
-# Flow:
-# 1. Handler Flush
-# 2. Time Synchronization Test
-# 3. Service Status Verification
-# =============================================================================
-
-# -----------------------------------------------------------------------------
-# 1. Handler Flush
-# -----------------------------------------------------------------------------
 - name: Chrony | test | Flush handlers
   ansible.builtin.meta: flush_handlers
 
-# -----------------------------------------------------------------------------
-# 2. Time Synchronization Test
-# -----------------------------------------------------------------------------
 - name: Chrony | test | Force NTP sync
   become: true
   ansible.builtin.command: chronyc makestep
-  register: _chrony_makestep_
+  register: __chrony_makestep_result
   changed_when:
-    - _chrony_makestep_.rc == 0
-    - "'200 OK' in _chrony_makestep_.stdout"
-    - "'Clock was stepped' in _chrony_makestep_.stdout or 'stepped' in _chrony_makestep_.stdout.lower()"
+    - __chrony_makestep_result.rc == 0
+    - "'200 OK' in __chrony_makestep_result.stdout"
+    - "'Clock was stepped' in __chrony_makestep_result.stdout or 'stepped' in __chrony_makestep_result.stdout.lower()"
   failed_when:
-    - _chrony_makestep_.rc != 0
-    - "'not synchronised' not in _chrony_makestep_.stdout.lower()"
-    - "'no suitable source' not in _chrony_makestep_.stdout.lower()"
+    - __chrony_makestep_result.rc != 0
+    - "'not synchronised' not in __chrony_makestep_result.stdout.lower()"
+    - "'no suitable source' not in __chrony_makestep_result.stdout.lower()"
 
 - name: Chrony | test | Ensure system is NTP time synced
   ansible.builtin.command: chronyc waitsync 30
   changed_when: false
 
-# -----------------------------------------------------------------------------
-# 3. Service Status Verification
-# -----------------------------------------------------------------------------
 - name: Chrony | test | Check if time is synchronized with server
   ansible.builtin.command: chronyc tracking
   changed_when: false
-  failed_when: _chrony_tracking_.rc != 0
-  register: _chrony_tracking_
+  failed_when: __chrony_tracking_result.rc != 0
+  register: __chrony_tracking_result
 
 - name: Chrony | test | Show tracking details
   ansible.builtin.debug:
     msg: >
       Tracking Output:
-      {{ _chrony_tracking_.stdout_lines | join('\n') }}
+      {{ __chrony_tracking_result.stdout_lines | join('\n') }}

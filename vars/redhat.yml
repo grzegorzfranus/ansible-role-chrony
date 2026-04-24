@@ -1,44 +1,14 @@
 ---
-# =============================================================================
-# Ansible Role: Chrony - RedHat-Specific Variables
-# =============================================================================
-# This file defines variables specific to RedHat-based distributions.
-# These values override or supplement the common variables defined in main.yml.
-#
-# Sections:
-#   1. Service Settings
-#   2. File Paths and Permissions
-# =============================================================================
+# RedHat-specific variables (internal, not user-configurable)
 
-# -----------------------------------------------------------------------------
-# 1. Service Settings
-# -----------------------------------------------------------------------------
-# Service names specific to RedHat-based systems
-# Main Chrony service name
-chrony_service_name: "chronyd"
+# Service names
+__chrony_service_name: "chronyd"
+__chrony_ntp_service_name: "ntpd"
+__chrony_timesyncd_service_name: "systemd-timesyncd"
 
-# Legacy NTP service name (for conflict checking)
-chrony_ntp_service_name: "ntpd"
-
-# SystemD timesyncd service name (for conflict checking)
-chrony_systemd_timesyncd_service_name: "systemd-timesyncd"
-
-# -----------------------------------------------------------------------------
-# 2. File Paths and Permissions
-# -----------------------------------------------------------------------------
-# RedHat-specific file paths and user settings
-
-# Main configuration file location
-chrony_config_path: "/etc/chrony.conf"
-
-# System user that owns Chrony processes and files
-chrony_log_directory_user: "chrony"
-
-# Path to the drift file (stores clock frequency error)
-chrony_driftfile_path: "/var/lib/chrony/drift"
-
-# Path to the keys file (for NTP authentication)
-chrony_keyfile_path: "/etc/chrony.keys"
-
-# Path to the chrony binary
-chrony_binary_path: "/usr/sbin/chronyd"
+# File paths and permissions
+__chrony_config_path: "/etc/chrony.conf"
+__chrony_log_directory_user: "chrony"
+__chrony_driftfile_path: "/var/lib/chrony/drift"
+__chrony_keyfile_path: "/etc/chrony.keys"
+__chrony_binary_path: "/usr/sbin/chronyd"

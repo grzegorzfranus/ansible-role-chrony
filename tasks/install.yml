@@ -1,20 +1,7 @@
 ---
-# =============================================================================
-# Ansible Role: Chrony - Package Installation
-# =============================================================================
-# This file contains tasks for installing the Chrony package.
-# The installation ensures that the package is present and up to date.
-#
-# Flow:
-# 1. Package Installation
-# =============================================================================
-
-# -----------------------------------------------------------------------------
-# 1. Package Installation
-# -----------------------------------------------------------------------------
 - name: Chrony | install | Install Chrony package
   become: true
   ansible.builtin.package:
-    name: "{{ chrony_package_name }}"
+    name: "{{ __chrony_package_name }}"
     state: present
     update_cache: true

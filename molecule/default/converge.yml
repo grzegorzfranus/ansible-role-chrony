@@ -1,28 +1,9 @@
-# =============================================================================
-# Ansible Role: Chrony - Molecule Convergence Playbook
-# =============================================================================
-# This playbook executes the main role functionality in the test environment.
-# It performs the following steps:
-# - Updates package repositories
-# - Ensures system readiness
-# - Executes the Chrony role
-#
-# Flow:
-# 1. Update package cache
-# 2. Wait for system initialization
-# 3. Apply Chrony role
-# =============================================================================
-
 ---
-# -----------------------------------------------------------------------------
-# 1. Pre-Tasks Setup
-# -----------------------------------------------------------------------------
 - name: molecule | Converge
   hosts: all
 
   pre_tasks:
-    # Package Cache Update
-    - name: 🔄 Converge | Update apt cache
+    - name: Converge | Update apt cache
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 600
@@ -30,29 +11,25 @@
       when: >
         ansible_os_family == "Debian"
 
-    - name: 🔄 Converge | Update dnf cache
+    - name: Converge | Update dnf cache
       ansible.builtin.dnf:
         update_cache: true
       changed_when: false
       when: >
         ansible_os_family == "RedHat"
 
-    # System Initialization
-    - name: ⏳ Converge | Wait for systemd to complete initialization
-      command: systemctl is-system-running
-      register: systemctl_status
+    - name: Converge | Wait for systemd to complete initialization
+      ansible.builtin.command: systemctl is-system-running
+      register: __converge_systemctl_status
       until: >
-        'running' in systemctl_status.stdout or
-        'degraded' in systemctl_status.stdout
+        'running' in __converge_systemctl_status.stdout or
+        'degraded' in __converge_systemctl_status.stdout
       retries: 30
       delay: 5
       when: >
         ansible_service_mgr == 'systemd'
       changed_when: false
-      failed_when: systemctl_status.rc > 1
+      failed_when: __converge_systemctl_status.rc > 1
 
-# -----------------------------------------------------------------------------
-# 2. Role Execution
-# -----------------------------------------------------------------------------
   roles:
     - role: grzegorzfranus.chrony
