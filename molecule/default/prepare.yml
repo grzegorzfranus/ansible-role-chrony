@@ -1,63 +1,19 @@
-# =============================================================================
-# Ansible Role: Chrony - Molecule Preparation Playbook
-# =============================================================================
-# This playbook prepares the test environment for Molecule testing.
-# It performs necessary system preparations before role execution:
-# - Fixes file permissions
-# - Validates system requirements
-# - Sets up required dependencies
-#
-# Flow:
-# 1. Fix system file permissions
-# 2. Validate system state
-# =============================================================================
-
 ---
-# -----------------------------------------------------------------------------
-# 1. System File Permissions
-# -----------------------------------------------------------------------------
 - name: molecule | Prepare
   hosts: all
   gather_facts: false
 
   tasks:
-    - name: 🛠️ Prepare | Fix /etc/shadow permissions
-      register: etc_shadow
-      ansible.builtin.shell:
-        cmd: |
-          echo "🔍 Checking /etc/shadow permissions..."
-          ls -l /etc/shadow
-          chmod 0400 /etc/shadow
-          echo "✅ Fixed /etc/shadow permissions:"
-          ls -l /etc/shadow
-          echo ""
+    - name: Prepare | Fix /etc/shadow permissions
+      ansible.builtin.file:
+        path: /etc/shadow
+        mode: "0400"
 
-    - name: 📊 Prepare | Verify shadow file permissions
-      ansible.builtin.debug:
-        var: etc_shadow.stdout
-
-    - name: 🔍 Prepare | Check if Chrony service directory exists
-      ansible.builtin.shell:
-        cmd: |
-          echo "🧪 Testing Chrony service availability..."
-          # Check if chrony service is available
-          if systemctl list-unit-files | grep -q chrony; then
-            echo "✅ Chrony service is available"
-          else
-            echo "⚠️ Chrony service not yet available (this is expected before installation)"
-          fi
-          echo ""
-      register: chrony_service_check
-
-    - name: 📊 Prepare | Show Chrony service check results
-      ansible.builtin.debug:
-        var: chrony_service_check.stdout
-
-    - name: 🛠️ Prepare | Ensure /etc/chrony directory permissions
+    - name: Prepare | Ensure /etc/chrony directory exists
       ansible.builtin.file:
         path: /etc/chrony
         state: directory
-        mode: '0755'
+        mode: "0755"
         owner: root
         group: root
-      ignore_errors: true  # Directory might not exist yet
+      ignore_errors: true

@@ -5,6 +5,104 @@ All notable changes to this Chrony NTP role will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-04-24
+
+### ⚠️ BREAKING CHANGES
+
+- **Variable rename: Internal variables now use `__chrony_` prefix** — All variables defined in `vars/` files
+  (OS-specific constants like service names, config paths, package names) are now prefixed with double
+  underscores to clearly distinguish them from user-configurable defaults per Red Hat CoP §3.1.4.
+  See Migration Guide below.
+- **Tag rename: All tags now use `chrony_` prefix** — Tags like `install`, `configure`, `setup` are now
+  `chrony_install`, `chrony_configure`, `chrony_setup` per Red Hat CoP §3.1.4.
+- **Removed `chrony_driftfile_path` and `chrony_keyfile_path` from `defaults/main.yml`** — These are
+  OS-specific and are now only set in `vars/{os_family}.yml` as `__chrony_driftfile_path` /
+  `__chrony_keyfile_path`.
+
+### Added ✅
+
+- **`meta/argument_specs.yml`** — Formal role argument specification per Red Hat CoP §3.1.20.
+  Enables `ansible-doc -t role` documentation and automatic argument validation at role invocation.
+- **Role Properties section in README** — Idempotent, atomic, check mode, roll-back, unit of automation,
+  and outcome designations per Red Hat CoP §3.1.17.
+- **Configuration backup** — Template tasks now use `backup: true` per Red Hat CoP §3.1.14.
+- **Oracle Linux 9 platform support** in `meta/main.yml`.
+- **Ubuntu 24.04 (Noble)** and **Debian 11 (Bullseye)** added to `meta/main.yml` platforms.
+- **Molecule idempotency test** — Added `idempotence` step to test sequence.
+- **ansible-lint added to CI pipeline** — Lint job now runs both yamllint and ansible-lint.
+
+### Changed 🔄
+
+- **ansible-lint profile raised to `production`** — Previously `min`.
+  Removed skip rules `role-name` and `meta-no-info`.
+- **`tasks/assert.yml` reduced from 401 to ~130 lines** — Simplified to cross-field validations only
+  (makestep format, rtcautotrim/rtcfile dependency, numeric ranges).
+  Simple type/defined/choice checks removed — now handled by `argument_specs.yml`.
+- **Idempotent directory creation** — Removed unnecessary `stat` + conditional patterns in `configure.yml`
+  and `logrotate.yml`. `ansible.builtin.file` with `state: directory` is inherently idempotent.
+- **Handler preserves enabled state** — `restart chrony` handler now sets `enabled: {{ chrony_service_enabled }}`.
+- **`upgrade.yml` uses `state: latest`** — Previously used `state: present` which never actually upgraded.
+- **`logrotate.yml` template src path fixed** — Removed redundant `templates/` prefix.
+- **Service enable/disable tasks** now include `become: true`.
+- **`meta/main.yml` galaxy_tags** — Moved from platform level to top-level only.
+- **Molecule verification** — Fixed permission assertions to match actual role behavior.
+- **Molecule preparation** — Replaced shell tasks with proper Ansible modules.
+
+### Fixed 🔧
+
+- **README phantom variable** — Removed `chrony_service_state` from docs (never existed in role).
+- **README invalid example** — Fixed `chrony_ntp_source_mode: "client"` → `"pool"`.
+- **README Ubuntu codename** — Fixed 24.04 codename from "Focal" to "Noble".
+- **`verify.yml` permission mismatch** — Config file check now matches actual role behavior (0644/root).
+- **`prepare.yml` shell usage** — Replaced `ansible.builtin.shell` with proper Ansible modules.
+
+### Migration Guide 📋
+
+If upgrading from v1.x, the following changes are required:
+
+#### Variable renames (`vars/` internal variables)
+
+```yaml
+# These are INTERNAL variables — most users do NOT need to reference them.
+# If you have overrides in inventory, update to new names:
+chrony_package_name          → __chrony_package_name
+chrony_service_name          → __chrony_service_name
+chrony_ntp_service_name      → __chrony_ntp_service_name
+chrony_systemd_timesyncd_service_name → __chrony_timesyncd_service_name
+chrony_config_path           → __chrony_config_path
+chrony_log_directory_user    → __chrony_log_directory_user
+chrony_driftfile_path        → __chrony_driftfile_path
+chrony_keyfile_path          → __chrony_keyfile_path
+chrony_logrotate_config_path → __chrony_logrotate_config_path
+chrony_binary_path           → __chrony_binary_path
+```
+
+#### Tag renames
+
+```yaml
+# Old → New
+setup       → chrony_setup
+init        → chrony_init
+validate    → chrony_validate
+requirements → chrony_requirements
+install     → chrony_install
+configure   → chrony_configure
+config      → chrony_config
+logrotate   → chrony_logrotate
+upgrade     → chrony_upgrade
+test        → chrony_test
+verify      → chrony_verify
+```
+
+#### Removed defaults
+
+```yaml
+# These variables are REMOVED from defaults/main.yml
+# They are now set automatically per-OS in vars/{os_family}.yml:
+chrony_driftfile_path   # → auto-set as __chrony_driftfile_path
+chrony_keyfile_path     # → auto-set as __chrony_keyfile_path
+```
+
 ## [1.0.7] - 2025-11-25
 
 ### Added ✅

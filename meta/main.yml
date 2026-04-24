@@ -4,7 +4,8 @@ galaxy_info:
   author: Grzegorz Franus
   namespace: grzegorzfranus
   description: >
-    Ansible role to install and configure Chrony NTP client.
+    Ansible role to install and configure Chrony NTP client/server.
+    Manages service lifecycle, NTP configuration, logging, and security hardening.
   license: Apache-2.0
   company: EWARE
   min_ansible_version: "2.15"
@@ -12,30 +13,21 @@ galaxy_info:
   platforms:
     - name: Debian
       versions:
+        - "bullseye"
         - "bookworm"
-      galaxy_tags:
-        - debian
-        - debian12
     - name: Ubuntu
       versions:
         - "jammy"
-      galaxy_tags:
-        - ubuntu
-        - ubuntu22
+        - "noble"
     - name: EL
       versions:
         - "9"
-      galaxy_tags:
-        - el
-        - el9
-        - rhel
-        - rhel9
     - name: Rocky
       versions:
-        - "9.0"
-      galaxy_tags:
-        - rocky
-        - rocky9
+        - all
+    - name: OracleLinux
+      versions:
+        - all
 
   galaxy_tags:
     - chrony
@@ -47,5 +39,10 @@ galaxy_info:
     - security
     - monitoring
     - maintenance
+    - debian
+    - ubuntu
+    - el
+    - rhel
+    - rocky
 
 dependencies: []

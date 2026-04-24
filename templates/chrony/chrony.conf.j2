@@ -30,7 +30,7 @@ server {{ server }}
 # 2. System Clock Management
 # -----------------------------------------------------------------------------
 # Path to the drift file for persistent clock correction
-driftfile {{ chrony_driftfile_path }}
+driftfile {{ __chrony_driftfile_path }}
 
 # Correct clock if offset exceeds threshold
 makestep {{ chrony_makestep }}
@@ -48,7 +48,7 @@ maxdistance {{ chrony_maxdistance }}
 # 3. Security Configuration
 # -----------------------------------------------------------------------------
 # Authentication key file location
-keyfile {{ chrony_keyfile_path }}
+keyfile {{ __chrony_keyfile_path }}
 
 # Command key configuration
 commandkey {{ chrony_command_key_id }}

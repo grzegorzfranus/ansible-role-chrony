@@ -1,0 +1,313 @@
+---
+# =============================================================================
+# Ansible Role: Chrony - Argument Specifications
+# =============================================================================
+# Formal argument specification per Red Hat CoP §3.1.20.
+# Enables ansible-doc documentation and automatic validation at role invocation.
+# =============================================================================
+
+argument_specs:
+  main:
+    short_description: Install and configure Chrony NTP service
+    description:
+      - >-
+        Ansible role to install and configure Chrony, a versatile
+        implementation of the Network Time Protocol (NTP).
+      - >-
+        Manages service lifecycle, NTP server/pool configuration,
+        logging, log rotation, and security hardening.
+    author: Grzegorz Franus
+    options:
+      chrony_role_action:
+        description: Define which parts of the role to execute.
+        type: str
+        default: "all"
+        choices:
+          - all
+          - prerequisites
+          - install
+          - configure
+          - logrotate
+          - upgrade
+      chrony_service_enabled:
+        description: Enable/disable Chrony service on boot.
+        type: bool
+        default: true
+      chrony_configure_logrotate:
+        description: Enable/disable logrotate configuration for Chrony logs.
+        type: bool
+        default: false
+      chrony_run_test:
+        description: Run time synchronization verification after configuration.
+        type: bool
+        default: false
+      chrony_ntp_source_mode:
+        description: >-
+          NTP source mode. Use 'pool' for DNS-based pool resolution
+          or 'server' for explicit server addresses.
+        type: str
+        default: "server"
+        choices:
+          - pool
+          - server
+      chrony_ntp_servers:
+        description: >-
+          List of NTP servers to sync with.
+          Format: "server_address [options]" where options include
+          iburst, minpoll, maxpoll, etc.
+        type: list
+        elements: str
+        default:
+          - "0.pool.ntp.org iburst minpoll 4 maxpoll 8"
+          - "1.pool.ntp.org iburst minpoll 4 maxpoll 8"
+          - "2.pool.ntp.org iburst minpoll 4 maxpoll 8"
+          - "3.pool.ntp.org iburst minpoll 4 maxpoll 8"
+      chrony_maxdistance:
+        description: Maximum allowed root distance in seconds.
+        type: float
+        default: 3.0
+      chrony_ntsdumpdir:
+        description: Directory for storing NTS cookies and keys.
+        type: str
+        default: "/var/lib/chrony"
+      chrony_num_minsources:
+        description: Minimum number of sources required for synchronization.
+        type: int
+        default: 1
+      chrony_maxupdateskew:
+        description: Maximum allowed skew for updates (in ppm).
+        type: float
+        default: 100.0
+      chrony_makestep:
+        description: >-
+          Step clock if offset is larger than threshold.
+          Format: '<threshold> <limit>' (e.g., '1.0 3').
+        type: str
+        default: "1.0 3"
+      chrony_command_key_id:
+        description: Key ID for NTP commands.
+        type: int
+        default: 1
+      chrony_default_access:
+        description: Default NTP access policy.
+        type: str
+        default: "deny"
+        choices:
+          - deny
+          - allow
+      chrony_ntp_clients:
+        description: >-
+          List of allowed NTP clients.
+          Format: "allow|deny <network>" (e.g., "allow 192.168.0.0/16").
+        type: list
+        elements: str
+        default: []
+      chrony_auth_settings:
+        description: Authentication settings dictionary.
+        type: dict
+        options:
+          enable:
+            description: Enable NTP authentication.
+            type: bool
+            default: false
+          selectmode:
+            description: Authentication select mode.
+            type: str
+            default: "require"
+            choices:
+              - require
+              - prefer
+              - ignore
+      chrony_leapsectz:
+        description: Leap seconds timezone.
+        type: str
+        default: "right/UTC"
+      chrony_leapsec_settings:
+        description: Leap second handling configuration.
+        type: dict
+        options:
+          mode:
+            description: Leap second handling mode.
+            type: str
+            default: "slew"
+          maxslewrate:
+            description: Maximum slew rate in ppm.
+            type: float
+            default: 1000.0
+          smoothtime:
+            description: Smooth time transition configuration.
+            type: str
+            default: "400 0.001 leaponly"
+      chrony_log_enable:
+        description: Enable Chrony logging.
+        type: bool
+        default: true
+      chrony_logdir_path:
+        description: Directory for storing log files.
+        type: str
+        default: "/var/log/chrony"
+      chrony_log_options:
+        description: >-
+          What information to log.
+          Options: measurements, statistics, tracking, rtc, refclocks, tempcomp.
+        type: str
+        default: "measurements statistics tracking"
+      chrony_logchange:
+        description: Log clock changes larger than specified seconds.
+        type: str
+        default: "0.5"
+      chrony_logrotate_options:
+        description: Logrotate configuration dictionary.
+        type: dict
+        options:
+          archive_directory_path:
+            description: Directory where archived logs will be stored.
+            type: str
+            default: "/var/log/chrony"
+          frequency:
+            description: How often to rotate logs.
+            type: str
+            default: "daily"
+            choices:
+              - hourly
+              - daily
+              - weekly
+              - monthly
+          count:
+            description: Number of rotated log files to keep.
+            type: int
+            default: 30
+          missingok:
+            description: Don't error if log file is missing.
+            type: bool
+            default: true
+          compress:
+            description: Compress rotated logs using gzip.
+            type: bool
+            default: true
+          nocreate:
+            description: Don't create new empty log file after rotation.
+            type: bool
+            default: true
+          copytruncate:
+            description: Use copy+truncate instead of move.
+            type: bool
+            default: false
+          dateext:
+            description: Add date extension to rotated logs.
+            type: bool
+            default: true
+      chrony_rtc_settings:
+        description: Real-Time Clock configuration dictionary.
+        type: dict
+        options:
+          rtcsync_enable:
+            description: Enable kernel synchronization of RTC.
+            type: bool
+            default: true
+          rtconutc_enable:
+            description: Set RTC time to UTC (recommended for Linux).
+            type: bool
+            default: true
+          rtcfile_enable:
+            description: Enable RTC tracking file for drift compensation.
+            type: bool
+            default: false
+          rtcfile_path:
+            description: Path to RTC tracking file.
+            type: str
+            default: "/var/lib/chrony/rtc"
+          rtcautotrim_enable:
+            description: >-
+              Enable automatic RTC trimming.
+              WARNING: Only effective when rtcfile_enable is true.
+            type: bool
+            default: false
+          rtcautotrim_interval:
+            description: Interval in seconds for RTC trimming.
+            type: int
+            default: 30
+          rtcdevice:
+            description: Custom RTC device path (empty = auto-detect).
+            type: str
+            default: ""
+      chrony_hardware_settings:
+        description: Hardware timestamping and reference clock settings.
+        type: dict
+        options:
+          enable_hw_timestamp:
+            description: Enable hardware timestamping for high accuracy.
+            type: bool
+            default: false
+          hw_timestamp_interfaces:
+            description: Network interfaces for hardware timestamping.
+            type: str
+            default: "*"
+          refclock_enable:
+            description: Enable reference clock (e.g. PPS device).
+            type: bool
+            default: false
+          refclock_pps:
+            description: Path to PPS device.
+            type: str
+            default: "/dev/pps0"
+          refclock_precision:
+            description: Precision for reference clock (seconds).
+            type: str
+            default: "1e-7"
+      chrony_system_settings:
+        description: System performance settings.
+        type: dict
+        options:
+          dumpdir:
+            description: Directory for storing clock state dumps.
+            type: str
+            default: "/var/lib/chrony"
+      chrony_temp_compensation:
+        description: Temperature compensation settings.
+        type: dict
+        options:
+          enable:
+            description: Enable temperature compensation.
+            type: bool
+            default: false
+          sensor_file:
+            description: Path to temperature sensor file.
+            type: str
+            default: "/sys/class/thermal/thermal_zone0/temp"
+          update_interval:
+            description: How often to update compensation (seconds).
+            type: int
+            default: 30
+          config_file:
+            description: Path to tempcomp config file.
+            type: str
+            default: "/etc/chrony/tempcomp"
+      chrony_client_settings:
+        description: NTP client options.
+        type: dict
+        options:
+          use_dhcp:
+            description: Use NTP servers provided by DHCP.
+            type: bool
+            default: false
+          dhcp_sourcedir:
+            description: Directory for DHCP NTP server info.
+            type: str
+            default: "/run/chrony-dhcp"
+          conf_dir:
+            description: Directory for extra config files.
+            type: str
+            default: "/etc/chrony/conf.d"
+          initstepslew:
+            description: Initial step slew configuration.
+            type: dict
+            options:
+              threshold:
+                description: Threshold for initial step correction (seconds).
+                type: int
+                default: 30
+              enable:
+                description: Enable rapid synchronization at startup.
+                type: bool
+                default: true
