@@ -2,28 +2,15 @@
 - name: molecule | Prepare
   hosts: all
   gather_facts: false
+  become: true
 
   tasks:
     - name: Prepare | Fix /etc/shadow permissions
-      become: true
       ansible.builtin.file:
         path: /etc/shadow
         mode: "0400"
 
-    - name: Prepare | Check if Chrony service directory exists
-      ansible.builtin.command:
-        cmd: systemctl list-unit-files
-      register: __prepare_unit_files
-      changed_when: false
-
-    - name: Prepare | Show Chrony service availability
-      ansible.builtin.debug:
-        msg: >-
-          Chrony service {{ 'is available' if 'chrony' in __prepare_unit_files.stdout
-          else 'not yet available (expected before installation)' }}
-
-    - name: Prepare | Ensure /etc/chrony directory permissions
-      become: true
+    - name: Prepare | Ensure /etc/chrony directory exists
       ansible.builtin.file:
         path: /etc/chrony
         state: directory
