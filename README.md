@@ -565,9 +565,9 @@ The test suite verifies:
 
 This role includes comprehensive GitHub Actions workflows for automated testing and deployment:
 
-### Testing Pipeline 🧪
+### Testing Pipeline
 - **Workflow**: `.github/workflows/test-and-validation.yml`
-- **Name**: `🧪 Test & Validation Pipeline`
+- **Name**: `CI/CD`
 - **Purpose**: Automated testing across multiple platforms
 - **Triggers**: Push to main branch, pull requests
 - **Features**:
@@ -576,9 +576,9 @@ This role includes comprehensive GitHub Actions workflows for automated testing 
   - Molecule test execution
   - Cross-platform compatibility verification
 
-### Galaxy Publishing 📦
+### Galaxy Publishing
 - **Workflow**: `.github/workflows/publish-to-galaxy.yml`
-- **Name**: `📦 Publish to Ansible Galaxy`
+- **Name**: `Publish`
 - **Purpose**: Automated role publishing to Ansible Galaxy
 - **Triggers**: Tagged releases (v*)
 
