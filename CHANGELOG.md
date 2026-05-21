@@ -5,6 +5,13 @@ All notable changes to this Chrony NTP role will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0](https://github.com/grzegorzfranus/ansible-role-chrony/compare/v2.0.1...v2.1.0) (2026-05-21)
+
+
+### Features
+
+* migrate to centralized CI, Release Please, and Galaxy publish ([#5](https://github.com/grzegorzfranus/ansible-role-chrony/issues/5)) ([9e57708](https://github.com/grzegorzfranus/ansible-role-chrony/commit/9e5770890287d906d8d92bb48ed0b70c071b5af0))
+
 ## [2.0.1] - 2026-05-18
 
 ### Fixed
