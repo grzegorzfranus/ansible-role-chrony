@@ -101,7 +101,7 @@ jobs:
           if errors:
               for e in errors:
                   print(f'::error::{e}')
-          sys.exit(1)
+              sys.exit(1)
           print('Galaxy metadata validation passed')
           "
 
