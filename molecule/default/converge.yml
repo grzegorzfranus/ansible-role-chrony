@@ -32,4 +32,4 @@
       failed_when: __converge_systemctl_status.rc > 1
 
   roles:
-    - role: grzegorzfranus.chrony
+    - role: ../../..
