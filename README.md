@@ -267,6 +267,10 @@ Customize for specific requirements:
 | `chrony_client_settings.initstepslew.threshold` | Threshold for initial step correction | `30` |
 | `chrony_client_settings.initstepslew.enable` | Enable rapid synchronization at startup | `true` |
 
+## 📤 Role Output
+
+This role does not set any public output facts.
+
 ## 🔍 Verification
 
 After deployment, verify time synchronization is working:
