@@ -5,6 +5,13 @@ All notable changes to this Chrony NTP role will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.3](https://github.com/grzegorzfranus/ansible-role-chrony/compare/v2.1.2...v2.1.3) (2026-05-24)
+
+
+### Bug Fixes
+
+* **ci:** fix sys.exit indentation in release workflow ([#11](https://github.com/grzegorzfranus/ansible-role-chrony/issues/11)) ([0ecafa0](https://github.com/grzegorzfranus/ansible-role-chrony/commit/0ecafa08b4fa1a81cf9ccd849cd8f64e238cd78a))
+
 ## [2.1.2](https://github.com/grzegorzfranus/ansible-role-chrony/compare/v2.1.1...v2.1.2) (2026-05-24)
 
 
