@@ -6,6 +6,11 @@
 chrony_role_action: "all"
 chrony_service_enabled: true
 chrony_configure_logrotate: false
+chrony_port_disabled: false
+chrony_bind_cmd_address_enable: true
+chrony_bind_cmd_addresses:
+  - "127.0.0.1"
+  - "::1"
 chrony_run_test: false
 
 # NTP source configuration
@@ -27,6 +32,8 @@ chrony_makestep: "1.0 3"
 # Security
 chrony_command_key_id: 1
 chrony_default_access: "deny"
+chrony_local_stratum_enable: false
+chrony_local_stratum: 10
 chrony_auth_settings:
   enable: false
   selectmode: "require"
@@ -46,7 +53,7 @@ chrony_logchange: "0.5"
 
 # Logrotate
 chrony_logrotate_options:
-  archive_directory_path: "/var/log/chrony"
+  archive_directory_path: ""
   frequency: "daily"
   count: 30
   missingok: true
