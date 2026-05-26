@@ -105,6 +105,29 @@
     success_msg: "rtcautotrim interval is valid: {{ chrony_rtc_settings.rtcautotrim_interval }} seconds"
   when: chrony_rtc_settings.rtcautotrim_enable | default(false)
 
+- name: Chrony | assert | Validate local stratum level
+  ansible.builtin.assert:
+    that:
+      - chrony_local_stratum is integer
+      - chrony_local_stratum > 0
+      - chrony_local_stratum <= 16
+    fail_msg: >-
+      Invalid local stratum '{{ chrony_local_stratum }}'.
+      Must be an integer between 1 and 16
+    success_msg: "Local stratum is valid: {{ chrony_local_stratum }}"
+  when: chrony_local_stratum_enable | default(false)
+
+- name: Chrony | assert | Validate bindcmdaddress list
+  ansible.builtin.assert:
+    that:
+      - chrony_bind_cmd_addresses is iterable
+      - chrony_bind_cmd_addresses | length > 0
+    fail_msg: >-
+      Invalid command bind addresses '{{ chrony_bind_cmd_addresses }}'.
+      Must be a non-empty list of IP addresses
+    success_msg: "Command bind addresses list is valid"
+  when: chrony_bind_cmd_address_enable | default(false)
+
 - name: Chrony | assert | Validate internal OS-specific variables are loaded
   ansible.builtin.assert:
     that:

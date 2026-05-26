@@ -37,6 +37,21 @@ argument_specs:
         description: Enable/disable logrotate configuration for Chrony logs.
         type: bool
         default: false
+      chrony_port_disabled:
+        description: Disable NTP listening port (UDP 123) for client-only nodes.
+        type: bool
+        default: false
+      chrony_bind_cmd_address_enable:
+        description: Restrict command socket binding to specific loopback addresses.
+        type: bool
+        default: true
+      chrony_bind_cmd_addresses:
+        description: List of addresses to bind chronyc command interface to.
+        type: list
+        elements: str
+        default:
+          - "127.0.0.1"
+          - "::1"
       chrony_run_test:
         description: Run time synchronization verification after configuration.
         type: bool
@@ -95,6 +110,14 @@ argument_specs:
         choices:
           - deny
           - allow
+      chrony_local_stratum_enable:
+        description: Enable local reference source to serve time even when unsynchronized.
+        type: bool
+        default: false
+      chrony_local_stratum:
+        description: Stratum level to report when serving time unsynchronized.
+        type: int
+        default: 10
       chrony_ntp_clients:
         description: >-
           List of allowed NTP clients.

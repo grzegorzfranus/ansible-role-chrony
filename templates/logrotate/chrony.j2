@@ -1,44 +1,33 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 {{ ansible_managed | comment }}
 
-# Log rotation configuration for Chrony service
-# This template manages the rotation of Chrony log files to prevent disk space issues
-# and maintain organized log archives.
+# Log rotation configuration for chrony
 
-# Define log files to rotate
 /var/log/chrony/*.log {
-  # Rotation frequency (daily, weekly, monthly)
-  {{ chrony_logrotate_options.frequency }}
-  # Number of rotated files to keep
-  rotate {{ chrony_logrotate_options.count }}
-  {% if chrony_logrotate_options.missingok %}
-  # Don't error if log file is missing
-  missingok
-  {% endif %}
-  {% if chrony_logrotate_options.compress %}
-  # Compress rotated log files
-  compress
-  {% endif %}
-  {% if chrony_logrotate_options.nocreate %}
-  # Don't create new log files after rotation
-  nocreate
-  {% endif %}
-  {% if chrony_logrotate_options.copytruncate %}
-  # Copy and truncate instead of moving log files
-  copytruncate
-  {% endif %}
-  {% if chrony_logrotate_options.dateext %}
-  # Add date to name of archive log files
-  dateext
-  dateformat .%Y-%m-%d
-  {% endif %}
-  # Archive log directory path
-  olddir {{ chrony_logrotate_options.archive_directory_path }}
-  # Run postrotate scripts if required
-  sharedscripts
-  # Execute commands after log rotation
-  postrotate
-    # Cycle logs and suppress output
-    /usr/bin/chronyc cyclelogs > /dev/null 2>&1 || true
-  endscript
+    {{ chrony_logrotate_options.frequency }}
+    rotate {{ chrony_logrotate_options.count }}
+    {% if chrony_logrotate_options.missingok %}
+    missingok
+    {% endif %}
+    {% if chrony_logrotate_options.compress %}
+    compress
+    {% endif %}
+    {% if chrony_logrotate_options.nocreate %}
+    nocreate
+    {% endif %}
+    {% if chrony_logrotate_options.copytruncate %}
+    copytruncate
+    {% endif %}
+    {% if chrony_logrotate_options.dateext %}
+    dateext
+    dateformat .%Y-%m-%d
+    {% endif %}
+    {% if chrony_logrotate_options.archive_directory_path is defined and chrony_logrotate_options.archive_directory_path | length > 0 %}
+    olddir {{ chrony_logrotate_options.archive_directory_path }}
+    {% endif %}
+    sharedscripts
+    postrotate
+        /usr/bin/chronyc cyclelogs >/dev/null 2>&1 || true
+    endscript
 }
+
