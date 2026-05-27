@@ -47,6 +47,7 @@ External NTP Servers ←→ Chrony Server ←→ Local Clients
 ## 📋 Requirements
 
 - **Ansible**: 2.15 or higher
+- **Python**: 3.9 or higher on target hosts
 - **Network**: Internet access for NTP synchronization (client mode)
 - **Privileges**: sudo/root access on target hosts
 
