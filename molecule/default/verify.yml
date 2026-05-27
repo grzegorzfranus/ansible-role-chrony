@@ -87,6 +87,28 @@
         checksum_algorithm: sha256
       register: __verify_logrotate_result
 
+    - name: Verify | Get chrony service status (diagnostics)
+      ansible.builtin.command:
+        cmd: "systemctl status {{ __chrony_service_name }}"
+      register: __verify_service_status_diag
+      failed_when: false
+      changed_when: false
+
+    - name: Verify | Show chrony service status (diagnostics)
+      ansible.builtin.debug:
+        var: __verify_service_status_diag.stdout_lines
+
+    - name: Verify | Get chrony journal logs (diagnostics)
+      ansible.builtin.command:
+        cmd: "journalctl -u {{ __chrony_service_name }} --no-pager -n 50"
+      register: __verify_journal_diag
+      failed_when: false
+      changed_when: false
+
+    - name: Verify | Show chrony journal logs (diagnostics)
+      ansible.builtin.debug:
+        var: __verify_journal_diag.stdout_lines
+
     - name: Verify | Check chrony synchronization
       ansible.builtin.command:
         cmd: "chronyc tracking"
