@@ -1,10 +1,7 @@
 ---
-# =============================================================================
 # Ansible Role: Chrony - Argument Specifications
-# =============================================================================
 # Formal argument specification per Red Hat CoP §3.1.20.
 # Enables ansible-doc documentation and automatic validation at role invocation.
-# =============================================================================
 
 argument_specs:
   main:
