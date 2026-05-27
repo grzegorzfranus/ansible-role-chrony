@@ -7,6 +7,16 @@
 ConditionVirtualization=
 
 [Service]
+# Override service type and ExecStart to bypass chronyd-starter.sh wrapper.
+# Ubuntu 26+ uses Type=notify with a wrapper script that calls sd_notify().
+# In containers, $NOTIFY_SOCKET is unavailable which causes:
+#   "Fatal error : Could not send notification to $NOTIFY_SOCKET"
+# Fix: run chronyd directly in foreground (-n) without clock control (-x).
+Type=simple
+ExecStart=
+ExecStart={{ __chrony_binary_path }} -n -x
+
+# Disable all sandboxing features (unavailable inside container namespaces)
 PrivateTmp=no
 PrivateDevices=no
 ProtectSystem=no

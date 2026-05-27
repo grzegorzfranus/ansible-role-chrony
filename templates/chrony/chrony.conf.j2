@@ -140,5 +140,5 @@ confdir {{ chrony_client_settings.conf_dir }}
 {% if chrony_client_settings.initstepslew.enable %}
 
 # Enable rapid synchronization at startup
-initstepslew {{ chrony_client_settings.initstepslew.threshold }} {{ chrony_ntp_servers[0] if chrony_ntp_servers else "" }}
+initstepslew {{ chrony_client_settings.initstepslew.threshold }} {{ chrony_ntp_servers[0].split()[0] if chrony_ntp_servers else "" }}
 {% endif %}
