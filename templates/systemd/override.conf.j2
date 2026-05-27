@@ -15,6 +15,11 @@ ConditionVirtualization=
 Type=simple
 ExecStart=
 ExecStart={{ __chrony_binary_path }} -n -x
+# Run as root — chronyd drops privileges to _chrony internally after init.
+# Required because the original unit sets User=_chrony for the wrapper script,
+# but chronyd needs root at startup (port binding, clock access, privdrop).
+User=root
+Group=root
 
 # Disable all sandboxing features (unavailable inside container namespaces)
 PrivateTmp=no
