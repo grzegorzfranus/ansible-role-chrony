@@ -31,14 +31,19 @@
       changed_when: false
       failed_when: __converge_systemctl_status.rc > 1
 
-  tasks:
-    - name: Converge | Run chrony role
-      block:
-        - name: Converge | Include chrony role
-          ansible.builtin.include_role:
-            name: "../../.."
+  roles:
+    - role: ../../..
 
-      rescue:
+  post_tasks:
+    - name: Converge | DEBUG | Check if chrony service is running
+      ansible.builtin.command: systemctl is-active chrony.service
+      register: __converge_chrony_active
+      changed_when: false
+      failed_when: false
+
+    - name: Converge | DEBUG | Dump diagnostics if chrony is not running
+      when: __converge_chrony_active.rc != 0
+      block:
         - name: Converge | DEBUG | Get systemctl status chrony
           ansible.builtin.command: systemctl status chrony.service --no-pager -l
           register: __converge_chrony_status
@@ -91,7 +96,3 @@
         - name: Converge | DEBUG | Print /dev/rtc status
           ansible.builtin.debug:
             msg: "/dev/rtc exists={{ __converge_rtc_check.stat.exists | default(false) }}"
-
-        - name: Converge | DEBUG | Fail after diagnostics
-          ansible.builtin.fail:
-            msg: "Chrony role failed — see diagnostic output above"

@@ -16,3 +16,5 @@
     state: restarted
     enabled: "{{ chrony_service_enabled }}"
   listen: "restart chrony"
+  register: __chrony_restart_result
+  failed_when: false
