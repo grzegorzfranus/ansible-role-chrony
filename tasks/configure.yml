@@ -48,3 +48,35 @@
     mode: "0750"
     group: "{{ __chrony_log_directory_user }}"
     owner: "{{ __chrony_log_directory_user }}"
+
+- name: Chrony | configure | Create systemd override directory for containers
+  become: true
+  ansible.builtin.file:
+    path: "/etc/systemd/system/{{ __chrony_service_name }}.service.d"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+  when: >
+    ansible_facts['virtualization_type'] | default('') in ['docker', 'container', 'containerd']
+  tags:
+    - chrony_configure
+    - chrony_config
+
+- name: Chrony | configure | Deploy systemd override for containers
+  become: true
+  ansible.builtin.template:
+    src: "systemd/override.conf.j2"
+    dest: "/etc/systemd/system/{{ __chrony_service_name }}.service.d/override.conf"
+    mode: "0644"
+    owner: root
+    group: root
+  when: >
+    ansible_facts['virtualization_type'] | default('') in ['docker', 'container', 'containerd']
+  register: __chrony_systemd_override
+  notify:
+    - reload systemd
+    - restart chrony
+  tags:
+    - chrony_configure
+    - chrony_config

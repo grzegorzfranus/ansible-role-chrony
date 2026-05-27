@@ -3,6 +3,12 @@
 #   __chrony_service_name - internal, set per-OS in vars/
 #   chrony_service_enabled - user-configurable default
 
+- name: Chrony | handlers | Reload systemd daemon
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+  listen: "reload systemd"
+
 - name: Chrony | handlers | Restart Chrony service
   become: true
   ansible.builtin.systemd:

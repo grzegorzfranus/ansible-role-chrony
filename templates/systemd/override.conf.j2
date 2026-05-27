@@ -1,0 +1,20 @@
+# {{ ansible_managed | comment }}
+# Systemd override to disable sandboxing inside container environments
+# to prevent systemd startup failures due to restricted host namespaces/security profiles.
+
+[Service]
+PrivateTmp=no
+PrivateDevices=no
+ProtectSystem=no
+ProtectHome=no
+ProtectHostname=no
+ProtectKernelTunables=no
+ProtectKernelModules=no
+ProtectControlGroups=no
+RestrictRealtime=no
+RestrictNamespaces=no
+MemoryDenyWriteExecute=no
+LockPersonality=no
+NoNewPrivileges=no
+RestrictSUIDSGID=no
+ProtectClock=no
