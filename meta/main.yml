@@ -21,13 +21,8 @@ galaxy_info:
         - "noble"
     - name: EL
       versions:
+        - "8"
         - "9"
-    - name: Rocky
-      versions:
-        - all
-    - name: OracleLinux
-      versions:
-        - all
 
   galaxy_tags:
     - chrony
