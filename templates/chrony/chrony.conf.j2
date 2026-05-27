@@ -41,7 +41,9 @@ ntsdumpdir {{ chrony_ntsdumpdir }}
 # Restrict command binding to loopback interfaces
 {% if chrony_bind_cmd_address_enable | default(true) %}
 {% for addr in chrony_bind_cmd_addresses | default(['127.0.0.1', '::1']) %}
+{% if addr != '::1' or (addr == '::1' and (__chrony_ipv6_supported | default(true))) %}
 bindcmdaddress {{ addr }}
+{% endif %}
 {% endfor %}
 {% endif %}
 

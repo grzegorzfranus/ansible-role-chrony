@@ -1,4 +1,17 @@
 ---
+- name: Chrony | configure | Check if IPv6 is enabled
+  ansible.builtin.stat:
+    path: /proc/net/if_inet6
+  register: __chrony_ipv6_check
+  tags:
+    - always
+
+- name: Chrony | configure | Set IPv6 support fact
+  ansible.builtin.set_fact:
+    __chrony_ipv6_supported: "{{ __chrony_ipv6_check.stat.exists }}"
+  tags:
+    - always
+
 - name: Chrony | configure | Enable Chrony service on system startup
   become: true
   ansible.builtin.service:
