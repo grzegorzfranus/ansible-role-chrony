@@ -2,6 +2,10 @@
 # Systemd override to disable sandboxing inside container environments
 # to prevent systemd startup failures due to restricted host namespaces/security profiles.
 
+[Unit]
+# Reset the virtualization condition check so the service can start inside containers
+ConditionVirtualization=
+
 [Service]
 PrivateTmp=no
 PrivateDevices=no
