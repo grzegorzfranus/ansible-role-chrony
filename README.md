@@ -55,8 +55,10 @@ External NTP Servers ←→ Chrony Server ←→ Local Clients
 List of officially supported operating systems:
 | OS Family | Version | Status |
 |-----------|---------|---------|
+| Ubuntu | 26.04 (Resolute) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Ubuntu | 24.04 (Noble) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Ubuntu | 22.04 (Jammy) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
+| Debian | 13 (Trixie) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Debian | 12 (Bookworm) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Debian | 11 (Bullseye) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Rocky Linux | 9 | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
@@ -536,8 +538,10 @@ All tags are prefixed with `chrony_` to avoid collisions (per Red Hat CoP §3.1.
 
 This role includes comprehensive Molecule tests that validate functionality across all supported operating systems:
 
-- **Ubuntu 22.04 LTS** - Complete functionality testing
+- **Ubuntu 26.04 LTS** - Complete functionality testing
 - **Ubuntu 24.04 LTS** - Complete functionality testing  
+- **Ubuntu 22.04 LTS** - Complete functionality testing
+- **Debian 13** - Complete functionality testing
 - **Debian 12** - Complete functionality testing
 - **Debian 11** - Complete functionality testing
 - **Rocky Linux 9** - Complete functionality testing

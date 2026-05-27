@@ -15,10 +15,12 @@ galaxy_info:
       versions:
         - "bullseye"
         - "bookworm"
+        - "trixie"
     - name: Ubuntu
       versions:
         - "jammy"
         - "noble"
+        - "resolute"
     - name: EL
       versions:
         - "9"
