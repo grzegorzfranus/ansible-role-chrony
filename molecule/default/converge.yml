@@ -31,5 +31,67 @@
       changed_when: false
       failed_when: __converge_systemctl_status.rc > 1
 
-  roles:
-    - role: ../../..
+  tasks:
+    - name: Converge | Run chrony role
+      block:
+        - name: Converge | Include chrony role
+          ansible.builtin.include_role:
+            name: "../../.."
+
+      rescue:
+        - name: Converge | DEBUG | Get systemctl status chrony
+          ansible.builtin.command: systemctl status chrony.service --no-pager -l
+          register: __converge_chrony_status
+          changed_when: false
+          failed_when: false
+
+        - name: Converge | DEBUG | Get journalctl for chrony
+          ansible.builtin.command: journalctl -xeu chrony.service --no-pager -n 100
+          register: __converge_chrony_journal
+          changed_when: false
+          failed_when: false
+
+        - name: Converge | DEBUG | Get chronyd dry-run output
+          ansible.builtin.command: chronyd -p
+          register: __converge_chrony_dryrun
+          changed_when: false
+          failed_when: false
+
+        - name: Converge | DEBUG | Show chrony.conf contents
+          ansible.builtin.command: cat /etc/chrony/chrony.conf
+          register: __converge_chrony_conf
+          changed_when: false
+          failed_when: false
+
+        - name: Converge | DEBUG | Check if /dev/rtc exists
+          ansible.builtin.stat:
+            path: /dev/rtc
+          register: __converge_rtc_check
+
+        - name: Converge | DEBUG | Check virtualization type
+          ansible.builtin.debug:
+            msg: "virtualization_type={{ ansible_facts['virtualization_type'] | default('N/A') }} virtualization_role={{ ansible_facts['virtualization_role'] | default('N/A') }}"
+
+        - name: Converge | DEBUG | Print systemctl status
+          ansible.builtin.debug:
+            msg: "{{ __converge_chrony_status.stdout_lines | default([]) + __converge_chrony_status.stderr_lines | default([]) }}"
+
+        - name: Converge | DEBUG | Print journalctl output
+          ansible.builtin.debug:
+            msg: "{{ __converge_chrony_journal.stdout_lines | default([]) }}"
+
+        - name: Converge | DEBUG | Print chronyd dry-run
+          ansible.builtin.debug:
+            msg: "{{ __converge_chrony_dryrun.stdout_lines | default([]) + __converge_chrony_dryrun.stderr_lines | default([]) }}"
+
+        - name: Converge | DEBUG | Print chrony.conf
+          ansible.builtin.debug:
+            msg: "{{ __converge_chrony_conf.stdout_lines | default([]) }}"
+
+        - name: Converge | DEBUG | Print /dev/rtc status
+          ansible.builtin.debug:
+            msg: "/dev/rtc exists={{ __converge_rtc_check.stat.exists | default(false) }}"
+
+        - name: Converge | DEBUG | Fail after diagnostics
+          ansible.builtin.fail:
+            msg: "Chrony role failed — see diagnostic output above"
