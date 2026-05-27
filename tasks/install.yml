@@ -5,3 +5,14 @@
     name: "{{ __chrony_package_name }}"
     state: present
     update_cache: true
+
+- name: Chrony | install | Install tzdata-legacy for legacy leap seconds timezone support
+  become: true
+  ansible.builtin.package:
+    name: "tzdata-legacy"
+    state: present
+  when: >
+    ansible_facts['os_family'] == "Debian" and
+    ((ansible_facts['distribution'] == "Debian" and ansible_facts['distribution_major_version'] | int >= 13) or
+     (ansible_facts['distribution'] == "Ubuntu" and ansible_facts['distribution_major_version'] | int >= 26)) and
+    chrony_leapsectz | default('') is search('^right/')
