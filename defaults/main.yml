@@ -53,7 +53,7 @@ chrony_logchange: "0.5"
 
 # Logrotate
 chrony_logrotate_options:
-  archive_directory_path: ""
+  archive_directory_path: "/var/log/chrony/archive"
   frequency: "daily"
   count: 30
   missingok: true

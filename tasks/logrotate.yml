@@ -4,7 +4,13 @@
   ansible.builtin.file:
     path: "{{ chrony_logrotate_options.archive_directory_path }}"
     state: directory
-    mode: "0755"
+    mode: "0750"
+    owner: "{{ __chrony_log_directory_user }}"
+    group: "{{ __chrony_log_directory_user }}"
+  when: >
+    chrony_logrotate_options.archive_directory_path is defined and
+    chrony_logrotate_options.archive_directory_path | length > 0
+
 
 - name: Chrony | logrotate | Deploy logrotate configuration file
   become: true
