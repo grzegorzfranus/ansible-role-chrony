@@ -55,19 +55,19 @@ bindcmdaddress {{ addr }}
 allow {{ client }}
 {% endfor %}
 {% endif %}
+{% if chrony_local_stratum_enable | default(false) %}
 
 # Local reference source (only if acting as isolated master NTP server)
-{% if chrony_local_stratum_enable | default(false) %}
 local stratum {{ chrony_local_stratum | default(10) }}
 {% endif %}
-
 {% if chrony_auth_settings.enable %}
+
 # Enable NTP authentication
 authselectmode {{ chrony_auth_settings.selectmode }}
 {% endif %}
+{% if chrony_port_disabled | default(false) %}
 
 # Disable listening port for client-only nodes (security hardening)
-{% if chrony_port_disabled | default(false) %}
 port 0
 {% endif %}
 
@@ -97,43 +97,40 @@ logchange {{ chrony_logchange }}
 # Enable kernel synchronization of the RTC
 rtcsync
 {% endif %}
-
 {% if chrony_rtc_settings.rtconutc_enable | default(true) %}
 # Assume RTC is set to UTC
 rtconutc
 {% endif %}
-
 {% if chrony_rtc_settings.rtcdevice | default('') | length > 0 %}
 # Custom RTC device path
 rtcdevice {{ chrony_rtc_settings.rtcdevice }}
 {% endif %}
-
 {% if chrony_rtc_settings.rtcfile_enable | default(false) %}
 # RTC tracking file for drift compensation between reboots
 rtcfile {{ chrony_rtc_settings.rtcfile_path | default('/var/lib/chrony/rtc') }}
-
 {% if chrony_rtc_settings.rtcautotrim_enable | default(false) %}
 # Automatic RTC trimming
 rtcautotrim {{ chrony_rtc_settings.rtcautotrim_interval | default(30) }}
 {% endif %}
 {% endif %}
+{% if chrony_hardware_settings.enable_hw_timestamp | default(false) or chrony_hardware_settings.refclock_enable | default(false) %}
 
 # Hardware Timestamping & Reference Clock
 {% if chrony_hardware_settings.enable_hw_timestamp | default(false) %}
 # Enable hardware timestamping on selected interfaces
 hwtimestamp {{ chrony_hardware_settings.hw_timestamp_interfaces | default('*') }}
 {% endif %}
-
 {% if chrony_hardware_settings.refclock_enable | default(false) %}
 # Reference clock configuration (e.g. PPS device)
 refclock PPS {{ chrony_hardware_settings.refclock_pps }} refid PPS precision {{ chrony_hardware_settings.refclock_precision }}
+{% endif %}
 {% endif %}
 
 # System Performance
 # Directory for storing clock state dumps
 dumpdir {{ chrony_system_settings.dumpdir }}
-
 {% if chrony_temp_compensation.enable %}
+
 # Temperature compensation
 tempcomp {{ chrony_temp_compensation.sensor_file }} {{ chrony_temp_compensation.update_interval }} {{ chrony_temp_compensation.config_file }}
 {% endif %}
@@ -146,9 +143,10 @@ sourcedir {{ chrony_client_settings.dhcp_sourcedir }}
 
 # Include configurations from external sources
 confdir {{ chrony_client_settings.conf_dir }}
-
 {% if chrony_client_settings.initstepslew.enable %}
+
 # Enable rapid synchronization at startup
 initstepslew {{ chrony_client_settings.initstepslew.threshold }} {{ chrony_ntp_servers[0] if chrony_ntp_servers else "" }}
 {% endif %}
+
 
