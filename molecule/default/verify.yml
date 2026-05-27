@@ -38,19 +38,6 @@
         checksum_algorithm: sha256
       register: __verify_binary_result
 
-    - name: Verify | Check if chrony service is running
-      ansible.builtin.service:
-        name: "{{ __chrony_service_name }}"
-        state: started
-      register: __verify_service_result
-
-    - name: Verify | Check if chrony service is enabled
-      ansible.builtin.service:
-        name: "{{ __chrony_service_name }}"
-        state: started
-        enabled: true
-      register: __verify_service_enabled_result
-
     - name: Verify | Check if chrony configuration file exists
       ansible.builtin.stat:
         path: "{{ __chrony_config_path }}"
@@ -87,39 +74,67 @@
         checksum_algorithm: sha256
       register: __verify_logrotate_result
 
-    - name: Verify | Get chrony service status (diagnostics)
-      ansible.builtin.command:
-        cmd: "systemctl status {{ __chrony_service_name }}"
-      register: __verify_service_status_diag
+    # --- Diagnostics block (always runs before service assertions) ---
+
+    - name: Verify | DEBUG | Check if chrony service is active
+      ansible.builtin.command: systemctl is-active chrony.service
+      register: __verify_chrony_is_active
+      changed_when: false
       failed_when: false
+
+    - name: Verify | DEBUG | Get systemctl status chrony
+      ansible.builtin.command: systemctl status chrony.service --no-pager -l
+      register: __verify_chrony_status
       changed_when: false
-
-    - name: Verify | Show chrony service status (diagnostics)
-      ansible.builtin.debug:
-        var: __verify_service_status_diag.stdout_lines
-
-    - name: Verify | Get chrony journal logs (diagnostics)
-      ansible.builtin.command:
-        cmd: "journalctl -u {{ __chrony_service_name }} --no-pager -n 50"
-      register: __verify_journal_diag
       failed_when: false
-      changed_when: false
 
-    - name: Verify | Show chrony journal logs (diagnostics)
+    - name: Verify | DEBUG | Get journalctl for chrony
+      ansible.builtin.command: journalctl -xeu chrony.service --no-pager -n 100
+      register: __verify_chrony_journal
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | DEBUG | Get chronyd dry-run output
+      ansible.builtin.command: chronyd -p
+      register: __verify_chrony_dryrun
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | DEBUG | Show deployed chrony.conf
+      ansible.builtin.command: cat {{ __chrony_config_path }}
+      register: __verify_chrony_conf
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | DEBUG | Check if /dev/rtc exists
+      ansible.builtin.stat:
+        path: /dev/rtc
+      register: __verify_rtc_check
+
+    - name: Verify | DEBUG | Print virtualization type
       ansible.builtin.debug:
-        var: __verify_journal_diag.stdout_lines
+        msg: >-
+          virtualization_type={{ ansible_facts['virtualization_type'] | default('N/A') }}
+          virtualization_role={{ ansible_facts['virtualization_role'] | default('N/A') }}
+          /dev/rtc exists={{ __verify_rtc_check.stat.exists | default(false) }}
 
-    - name: Verify | Check chrony synchronization
-      ansible.builtin.command:
-        cmd: "chronyc tracking"
-      register: __verify_sync_result
-      changed_when: false
+    - name: Verify | DEBUG | Print systemctl status
+      ansible.builtin.debug:
+        msg: "{{ __verify_chrony_status.stdout_lines | default([]) + __verify_chrony_status.stderr_lines | default([]) }}"
 
-    - name: Verify | Check chrony sources
-      ansible.builtin.command:
-        cmd: "chronyc sources"
-      register: __verify_sources_result
-      changed_when: false
+    - name: Verify | DEBUG | Print journalctl output
+      ansible.builtin.debug:
+        msg: "{{ __verify_chrony_journal.stdout_lines | default([]) }}"
+
+    - name: Verify | DEBUG | Print chronyd dry-run (config validation)
+      ansible.builtin.debug:
+        msg: "{{ __verify_chrony_dryrun.stdout_lines | default([]) + __verify_chrony_dryrun.stderr_lines | default([]) }}"
+
+    - name: Verify | DEBUG | Print deployed chrony.conf
+      ansible.builtin.debug:
+        msg: "{{ __verify_chrony_conf.stdout_lines | default([]) }}"
+
+    # --- Assertions ---
 
     - name: Verify | Assert Chrony binary exists
       ansible.builtin.assert:
@@ -135,9 +150,25 @@
         fail_msg: "Chrony configuration file not found at {{ __chrony_config_path }}"
         success_msg: "Chrony configuration file verified"
 
-    - name: Verify | Show verification results
-      ansible.builtin.debug:
-        msg: "All Chrony verification checks completed successfully"
+    - name: Verify | Assert chrony service is running
+      ansible.builtin.assert:
+        that:
+          - __verify_chrony_is_active.rc == 0
+        fail_msg: >-
+          Chrony service is not running (is-active rc={{ __verify_chrony_is_active.rc }},
+          stdout={{ __verify_chrony_is_active.stdout | default('') }}).
+          Check diagnostic output above for details.
+        success_msg: "Chrony service is active and running"
+
+    - name: Verify | Check chrony synchronization
+      ansible.builtin.command: chronyc tracking
+      register: __verify_sync_result
+      changed_when: false
+
+    - name: Verify | Check chrony sources
+      ansible.builtin.command: chronyc sources
+      register: __verify_sources_result
+      changed_when: false
 
     - name: Verify | Final verification summary
       ansible.builtin.debug:
@@ -147,3 +178,4 @@
           - "Logging setup: {{ 'Configured' if chrony_log_enable else 'Disabled' }}"
           - "Log rotation: {{ 'Configured' if chrony_configure_logrotate else 'Disabled' }}"
           - "Chrony role verification: PASSED"
+
