@@ -16,4 +16,3 @@
     state: restarted
     enabled: "{{ chrony_service_enabled }}"
   listen: "restart chrony"
-
