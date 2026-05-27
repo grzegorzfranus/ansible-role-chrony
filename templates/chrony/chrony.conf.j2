@@ -91,10 +91,11 @@ logchange {{ chrony_logchange }}
 {% endif %}
 
 # Real-Time Clock (RTC) Configuration
-{% if chrony_rtc_settings.rtcsync_enable | default(true) %}
+{% if chrony_rtc_settings.rtcsync_enable | default(true) and not (__chrony_is_container | default(false)) %}
 # Enable kernel synchronization of the RTC
 rtcsync
-{% endif %}{% if chrony_rtc_settings.rtconutc_enable | default(true) %}
+{% endif %}
+{% if chrony_rtc_settings.rtconutc_enable | default(true) and not (__chrony_is_container | default(false)) %}
 # Assume RTC is set to UTC
 rtconutc
 {% endif %}{% if chrony_rtc_settings.rtcdevice | default('') | length > 0 %}

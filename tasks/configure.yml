@@ -12,6 +12,21 @@
   tags:
     - always
 
+- name: Chrony | configure | Set container detection fact
+  ansible.builtin.set_fact:
+    __chrony_is_container: "{{ ansible_facts['virtualization_type'] | default('') in ['docker', 'container', 'containerd', 'podman', 'lxc'] }}"
+  tags:
+    - always
+
+- name: Chrony | configure | Ensure confdir directory exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ chrony_client_settings.conf_dir }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
 - name: Chrony | configure | Enable Chrony service on system startup
   become: true
   ansible.builtin.service:
