@@ -87,6 +87,37 @@
         checksum_algorithm: sha256
       register: __verify_logrotate_result
 
+    - name: Verify | Debug | Check chronyd service status
+      ansible.builtin.command:
+        cmd: "systemctl status {{ __chrony_service_name }}"
+      register: __verify_debug_service
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Debug | Show chronyd service status
+      ansible.builtin.debug:
+        var: __verify_debug_service.stdout_lines
+
+    - name: Verify | Debug | Check chronyd journal logs
+      ansible.builtin.command:
+        cmd: "journalctl -u {{ __chrony_service_name }} --no-pager -n 30"
+      register: __verify_debug_journal
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Debug | Show chronyd journal logs
+      ansible.builtin.debug:
+        var: __verify_debug_journal.stdout_lines
+
+    - name: Verify | Debug | Check if right/UTC timezone exists
+      ansible.builtin.stat:
+        path: /usr/share/zoneinfo/right/UTC
+      register: __verify_debug_right_utc
+
+    - name: Verify | Debug | Show right/UTC timezone status
+      ansible.builtin.debug:
+        msg: "right/UTC exists: {{ __verify_debug_right_utc.stat.exists }}"
+
     - name: Verify | Check chrony synchronization
       ansible.builtin.command:
         cmd: "chronyc tracking"
