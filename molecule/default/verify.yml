@@ -118,6 +118,28 @@
       ansible.builtin.debug:
         msg: "right/UTC exists: {{ __verify_debug_right_utc.stat.exists }}"
 
+    - name: Verify | Debug | Check systemd service conditions
+      ansible.builtin.command:
+        cmd: "systemctl show {{ __chrony_service_name }} --property=ConditionResult,ActiveState,SubState,UnitFileState"
+      register: __verify_debug_conditions
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Debug | Show systemd service conditions
+      ansible.builtin.debug:
+        var: __verify_debug_conditions.stdout_lines
+
+    - name: Verify | Debug | Check systemd override file
+      ansible.builtin.command:
+        cmd: "cat /etc/systemd/system/{{ __chrony_service_name }}.service.d/override.conf"
+      register: __verify_debug_override
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Debug | Show systemd override content
+      ansible.builtin.debug:
+        var: __verify_debug_override.stdout_lines
+
     - name: Verify | Check chrony synchronization
       ansible.builtin.command:
         cmd: "chronyc tracking"

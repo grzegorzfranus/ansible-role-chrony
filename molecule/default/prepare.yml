@@ -17,3 +17,32 @@
         owner: root
         group: root
       ignore_errors: true
+
+    # Ubuntu 26.04+ and Debian 13+ chrony.service ships with
+    # ConditionVirtualization=|!container which prevents chronyd
+    # from starting inside Docker containers used by Molecule.
+    - name: Prepare | Create systemd override directories for chrony
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+      loop:
+        - /etc/systemd/system/chrony.service.d
+        - /etc/systemd/system/chronyd.service.d
+
+    - name: Prepare | Override ConditionVirtualization for container testing
+      ansible.builtin.copy:
+        dest: "{{ item }}/override.conf"
+        content: |
+          [Unit]
+          # Clear ConditionVirtualization for Molecule container testing.
+          # Newer distros (Ubuntu 26.04+, Debian 13+) block chrony in containers.
+          ConditionVirtualization=
+        mode: "0644"
+        owner: root
+        group: root
+      loop:
+        - /etc/systemd/system/chrony.service.d
+        - /etc/systemd/system/chronyd.service.d
