@@ -31,5 +31,88 @@
       changed_when: false
       failed_when: __converge_systemctl_status.rc > 1
 
-  roles:
-    - role: ../../..
+  tasks:
+    - name: Converge | Execute chrony role
+      block:
+        - name: Converge | Include chrony role
+          ansible.builtin.include_role:
+            name: "{{ playbook_dir }}/../../.."
+
+        # Force handlers to fire within block scope.
+        # Without this, handlers fire at end of play (outside block)
+        # and rescue cannot catch handler failures.
+        - name: Converge | Flush handlers
+          ansible.builtin.meta: flush_handlers
+      rescue:
+        - name: Converge | Debug | Capture systemctl status
+          ansible.builtin.command:
+            cmd: "systemctl status chrony.service chronyd.service"
+          register: __converge_debug_status
+          changed_when: false
+          failed_when: false
+
+        - name: Converge | Debug | Show service status
+          ansible.builtin.debug:
+            var: __converge_debug_status.stdout_lines
+
+        - name: Converge | Debug | Capture journal logs
+          ansible.builtin.command:
+            cmd: "journalctl -xeu chrony.service --no-pager -n 50"
+          register: __converge_debug_journal
+          changed_when: false
+          failed_when: false
+
+        - name: Converge | Debug | Show journal logs
+          ansible.builtin.debug:
+            var: __converge_debug_journal.stdout_lines
+
+        - name: Converge | Debug | Show generated chrony.conf
+          ansible.builtin.command:
+            cmd: "cat /etc/chrony/chrony.conf"
+          register: __converge_debug_config
+          changed_when: false
+          failed_when: false
+
+        - name: Converge | Debug | Show chrony configuration
+          ansible.builtin.debug:
+            var: __converge_debug_config.stdout_lines
+
+        - name: Converge | Debug | Check IPv6 availability
+          ansible.builtin.command:
+            cmd: "cat /proc/net/if_inet6"
+          register: __converge_debug_ipv6
+          changed_when: false
+          failed_when: false
+
+        - name: Converge | Debug | Show IPv6 status
+          ansible.builtin.debug:
+            msg: "IPv6 available: {{ __converge_debug_ipv6.rc == 0 }}, interfaces: {{ __converge_debug_ipv6.stdout_lines | default([]) }}"
+
+        - name: Converge | Debug | Try chronyd dry-run
+          ansible.builtin.command:
+            cmd: "chronyd -d -f /etc/chrony/chrony.conf"
+          register: __converge_debug_dryrun
+          changed_when: false
+          failed_when: false
+          timeout: 5
+          ignore_errors: true
+
+        - name: Converge | Debug | Show chronyd dry-run output
+          ansible.builtin.debug:
+            msg:
+              - "rc: {{ __converge_debug_dryrun.rc | default('N/A') }}"
+              - "stdout: {{ __converge_debug_dryrun.stdout_lines | default([]) }}"
+              - "stderr: {{ __converge_debug_dryrun.stderr_lines | default([]) }}"
+
+        - name: Converge | Debug | Check confdir exists
+          ansible.builtin.stat:
+            path: /etc/chrony/conf.d
+          register: __converge_debug_confdir
+
+        - name: Converge | Debug | Show confdir status
+          ansible.builtin.debug:
+            msg: "confdir /etc/chrony/conf.d exists: {{ __converge_debug_confdir.stat.exists }}"
+
+        - name: Converge | Fail after diagnostics
+          ansible.builtin.fail:
+            msg: "Chrony role failed during converge. See diagnostic output above."
