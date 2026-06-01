@@ -1,7 +1,9 @@
 ---
-# Handler variables:
-#   __chrony_service_name - internal, set per-OS in vars/
-#   chrony_service_enabled - user-configurable default
+# =============================================================================
+# Ansible Role: Chrony - Handlers
+# =============================================================================
+# Handlers for service management operations.
+# =============================================================================
 
 - name: Chrony | handlers | Restart Chrony service
   become: true

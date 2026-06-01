@@ -1,4 +1,10 @@
 ---
+# =============================================================================
+# Ansible Role: Chrony - Tasks: Configure
+# =============================================================================
+# Configure Chrony service, directories, and deploy configurations.
+# =============================================================================
+
 - name: Chrony | configure | Enable Chrony service on system startup
   become: true
   ansible.builtin.service:

@@ -1,4 +1,10 @@
 ---
+# =============================================================================
+# Ansible Role: Chrony - Tasks: Prerequisites
+# =============================================================================
+# Ensure conflicting NTP/time sync services (ntp, systemd-timesyncd) are stopped.
+# =============================================================================
+
 - name: Chrony | prerequisites | Check if NTP service exists
   ansible.builtin.systemd:
     name: "{{ __chrony_ntp_service_name }}"

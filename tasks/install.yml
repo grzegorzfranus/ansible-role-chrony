@@ -1,4 +1,10 @@
 ---
+# =============================================================================
+# Ansible Role: Chrony - Tasks: Install
+# =============================================================================
+# Install Chrony packages and required dependencies.
+# =============================================================================
+
 - name: Chrony | install | Install Chrony package
   become: true
   ansible.builtin.package:

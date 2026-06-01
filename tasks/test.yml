@@ -1,7 +1,14 @@
 ---
+# =============================================================================
+# Ansible Role: Chrony - Tasks: Test
+# =============================================================================
+# Verify time synchronization using chronyc utility.
+# =============================================================================
+
 - name: Chrony | test | Flush handlers
   ansible.builtin.meta: flush_handlers
 
+# Justification: Use command module as there is no native Ansible module to trigger clock stepping on the Chrony daemon.
 - name: Chrony | test | Force NTP sync
   become: true
   ansible.builtin.command: chronyc makestep
@@ -15,10 +22,12 @@
     - "'not synchronised' not in __chrony_makestep_result.stdout.lower()"
     - "'no suitable source' not in __chrony_makestep_result.stdout.lower()"
 
+# Justification: Use command module as there is no native Ansible module to wait for Chrony time synchronization.
 - name: Chrony | test | Ensure system is NTP time synced
   ansible.builtin.command: chronyc waitsync 30
   changed_when: false
 
+# Justification: Use command module as there is no native Ansible module to retrieve Chrony clock tracking details.
 - name: Chrony | test | Check if time is synchronized with server
   ansible.builtin.command: chronyc tracking
   changed_when: false
