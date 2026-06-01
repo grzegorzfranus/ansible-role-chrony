@@ -24,6 +24,12 @@
     owner: root
     group: root
 
+- name: Chrony | configure | Check if leapsectz timezone file exists
+  ansible.builtin.stat:
+    path: "/usr/share/zoneinfo/{{ chrony_leapsectz }}"
+  register: __chrony_leapsectz_file
+  when: chrony_leapsectz is defined and chrony_leapsectz | length > 0
+
 - name: Chrony | configure | Deploy Chrony configuration file
   become: true
   ansible.builtin.template:
