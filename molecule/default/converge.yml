@@ -36,7 +36,7 @@
       block:
         - name: Converge | Include chrony role
           ansible.builtin.include_role:
-            name: "{{ playbook_dir }}/../../.."
+            name: "{{ playbook_dir }}/../.."
 
         # Force handlers to fire within block scope.
         # Without this, handlers fire at end of play (outside block)
