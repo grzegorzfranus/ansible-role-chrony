@@ -17,3 +17,69 @@
         owner: root
         group: root
       ignore_errors: true
+
+    # Ubuntu 26.04+ and Debian 13+ chrony.service ships with
+    # ConditionVirtualization=|!container which prevents chronyd
+    # from starting inside Docker containers used by Molecule.
+    - name: Prepare | Create systemd override directories for chrony
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+      loop:
+        - /etc/systemd/system/chrony.service.d
+        - /etc/systemd/system/chronyd.service.d
+
+    - name: Prepare | Override ConditionVirtualization for container testing
+      ansible.builtin.copy:
+        dest: "{{ item }}/override.conf"
+        content: |
+          [Unit]
+          # Clear ConditionVirtualization for Molecule container testing.
+          # Newer distros (Ubuntu 26.04+, Debian 13+) block chrony in containers.
+          ConditionVirtualization=
+          # Clear ConditionCapability=CAP_SYS_TIME for container testing.
+          ConditionCapability=
+
+          [Service]
+          # Clear User= so chronyd runs as root (avoids "Not superuser" error).
+          # Ubuntu 26.04+ sets User=_chrony which prevents clock operations.
+          User=
+          # Override service type for container testing compatibility.
+          # Debian uses Type=notify, RHEL uses Type=forking — both conflict
+          # with chronyd -n (foreground mode). Type=simple works universally.
+          Type=simple
+          # Run chronyd in foreground (-n) free-running mode (-x) inside Molecule
+          # containers. -n keeps chronyd in foreground (matches Type=simple).
+          # -x avoids adjusting system clock (no CAP_SYS_TIME needed).
+          ExecStart=
+          ExecStart=/usr/sbin/chronyd -n -x $DAEMON_OPTS
+          # Clear security sandboxing that conflicts with container testing.
+          ProtectSystem=
+          ProtectHome=
+          PrivateTmp=
+          NoNewPrivileges=
+          ProtectKernelTunables=
+          ProtectControlGroups=
+          ProtectHostname=
+          ProtectKernelLogs=
+          ProtectKernelModules=
+          # Clear systemd-managed directories to prevent ownership conflicts.
+          # With User= cleared, systemd would set these dirs to root:root,
+          # conflicting with role's _chrony ownership.
+          LogsDirectory=
+          StateDirectory=
+          RuntimeDirectory=
+          ConfigurationDirectory=
+        mode: "0644"
+        owner: root
+        group: root
+      loop:
+        - /etc/systemd/system/chrony.service.d
+        - /etc/systemd/system/chronyd.service.d
+
+    - name: Prepare | Reload systemd daemon after overrides
+      ansible.builtin.systemd:
+        daemon_reload: true

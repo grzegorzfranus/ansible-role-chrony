@@ -26,6 +26,112 @@
           paths:
             - "../../vars"
 
+    # ============================================================
+    # Diagnostics — always run first to capture state before any
+    # task attempts to start/modify services
+    # ============================================================
+    - name: Verify | Debug | Check chronyd service status
+      ansible.builtin.command:
+        cmd: "systemctl status {{ __chrony_service_name }}"
+      register: __verify_debug_service
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Debug | Show chronyd service status
+      ansible.builtin.debug:
+        var: __verify_debug_service.stdout_lines
+
+    - name: Verify | Debug | Check chronyd journal logs
+      ansible.builtin.command:
+        cmd: "journalctl -xeu {{ __chrony_service_name }} --no-pager -n 50"
+      register: __verify_debug_journal
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Debug | Show chronyd journal logs
+      ansible.builtin.debug:
+        var: __verify_debug_journal.stdout_lines
+
+    - name: Verify | Debug | Show generated chrony.conf
+      ansible.builtin.command:
+        cmd: "cat {{ __chrony_config_path }}"
+      register: __verify_debug_config
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Debug | Show chrony configuration
+      ansible.builtin.debug:
+        var: __verify_debug_config.stdout_lines
+
+    - name: Verify | Debug | Check systemd service conditions
+      ansible.builtin.command:
+        cmd: "systemctl show {{ __chrony_service_name }} --property=ConditionResult,ActiveState,SubState,UnitFileState"
+      register: __verify_debug_conditions
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Debug | Show systemd service conditions
+      ansible.builtin.debug:
+        var: __verify_debug_conditions.stdout_lines
+
+    - name: Verify | Debug | Check systemd override file
+      ansible.builtin.command:
+        cmd: "cat /etc/systemd/system/{{ __chrony_service_name }}.service.d/override.conf"
+      register: __verify_debug_override
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Debug | Show systemd override content
+      ansible.builtin.debug:
+        var: __verify_debug_override.stdout_lines
+
+    - name: Verify | Debug | Check IPv6 availability
+      ansible.builtin.command:
+        cmd: "cat /proc/net/if_inet6"
+      register: __verify_debug_ipv6
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Debug | Show IPv6 status
+      ansible.builtin.debug:
+        msg: "IPv6 available: {{ __verify_debug_ipv6.rc == 0 }}, interfaces: {{ __verify_debug_ipv6.stdout_lines | default([]) }}"
+
+    - name: Verify | Debug | Check if right/UTC timezone exists
+      ansible.builtin.stat:
+        path: /usr/share/zoneinfo/right/UTC
+      register: __verify_debug_right_utc
+
+    - name: Verify | Debug | Show right/UTC timezone status
+      ansible.builtin.debug:
+        msg: "right/UTC exists: {{ __verify_debug_right_utc.stat.exists }}"
+
+    - name: Verify | Debug | Check confdir exists
+      ansible.builtin.stat:
+        path: /etc/chrony/conf.d
+      register: __verify_debug_confdir
+
+    - name: Verify | Debug | Show confdir status
+      ansible.builtin.debug:
+        msg: "confdir /etc/chrony/conf.d exists: {{ __verify_debug_confdir.stat.exists }}"
+
+    - name: Verify | Debug | Try chronyd config validation
+      ansible.builtin.command:
+        cmd: "chronyd -p -f {{ __chrony_config_path }}"
+      register: __verify_debug_dryrun
+      changed_when: false
+      failed_when: false
+      ignore_errors: true
+
+    - name: Verify | Debug | Show chronyd dry-run output
+      ansible.builtin.debug:
+        msg:
+          - "rc: {{ __verify_debug_dryrun.rc | default('N/A') }}"
+          - "stdout: {{ __verify_debug_dryrun.stdout_lines | default([]) }}"
+          - "stderr: {{ __verify_debug_dryrun.stderr_lines | default([]) }}"
+
+    # ============================================================
+    # Verification checks — non-failing data collection
+    # ============================================================
     - name: Verify | Check if chrony package is installed
       ansible.builtin.package:
         name: "{{ __chrony_package_name }}"
@@ -92,13 +198,18 @@
         cmd: "chronyc tracking"
       register: __verify_sync_result
       changed_when: false
+      failed_when: false
 
     - name: Verify | Check chrony sources
       ansible.builtin.command:
         cmd: "chronyc sources"
       register: __verify_sources_result
       changed_when: false
+      failed_when: false
 
+    # ============================================================
+    # Assertions
+    # ============================================================
     - name: Verify | Assert Chrony binary exists
       ansible.builtin.assert:
         that:

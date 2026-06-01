@@ -68,6 +68,8 @@ port 0
 {% endif %}
 
 # Leap Second Handling
+{% if chrony_leapsectz is defined and chrony_leapsectz | length > 0 and
+      __chrony_leapsectz_file.stat.exists | default(false) %}
 # Get TAI-UTC offset and leap second announcements from the system database
 leapsectz {{ chrony_leapsectz }}
 
@@ -75,6 +77,7 @@ leapsectz {{ chrony_leapsectz }}
 leapsecmode {{ chrony_leapsec_settings.mode }}
 maxslewrate {{ chrony_leapsec_settings.maxslewrate }}
 smoothtime {{ chrony_leapsec_settings.smoothtime }}
+{% endif %}
 
 # Logging and Monitoring
 {% if chrony_log_enable %}
@@ -133,7 +136,7 @@ sourcedir {{ chrony_client_settings.dhcp_sourcedir }}
 
 {% endif %}
 # Include configurations from external sources
-confdir {{ chrony_client_settings.conf_dir }}
+confdir {{ chrony_client_settings.conf_dir | default(__chrony_confdir_path) }}
 {% if chrony_client_settings.initstepslew.enable %}
 
 # Enable rapid synchronization at startup

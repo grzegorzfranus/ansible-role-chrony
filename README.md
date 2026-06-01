@@ -55,8 +55,10 @@ External NTP Servers ←→ Chrony Server ←→ Local Clients
 List of officially supported operating systems:
 | OS Family | Version | Status |
 |-----------|---------|---------|
+| Ubuntu | 26.04 (Resolute) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Ubuntu | 24.04 (Noble) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Ubuntu | 22.04 (Jammy) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
+| Debian | 13 (Trixie) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Debian | 12 (Bookworm) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Debian | 11 (Bullseye) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Rocky Linux | 9 | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
@@ -425,9 +427,8 @@ ansible-role-chrony/
 │       └── chrony.j2        # Log rotation configuration template
 └── vars/
     ├── main.yml             # Internal role variables and constants
-    ├── debian.yml           # Debian-specific variables
-    ├── redhat.yml           # RedHat-specific variables
-    └── ubuntu.yml           # Ubuntu-specific variables
+    ├── debian.yml           # Debian/Ubuntu-specific variables
+    └── redhat.yml           # RedHat-specific variables
 ```
 
 ## 🏷️ Tags
@@ -536,8 +537,10 @@ All tags are prefixed with `chrony_` to avoid collisions (per Red Hat CoP §3.1.
 
 This role includes comprehensive Molecule tests that validate functionality across all supported operating systems:
 
+- **Ubuntu 26.04 LTS** - Complete functionality testing
+- **Ubuntu 24.04 LTS** - Complete functionality testing
 - **Ubuntu 22.04 LTS** - Complete functionality testing
-- **Ubuntu 24.04 LTS** - Complete functionality testing  
+- **Debian 13** - Complete functionality testing
 - **Debian 12** - Complete functionality testing
 - **Debian 11** - Complete functionality testing
 - **Rocky Linux 9** - Complete functionality testing
@@ -579,7 +582,7 @@ Runs on every Pull Request via centralized reusable workflow:
 3. **YAML Lint** — validates all YAML files
 4. **Ansible Lint** — enforces best practices and guidelines compliance
 5. **Security Scan** — TruffleHog secret detection
-6. **Molecule Tests** — matrix across Ubuntu 24.04, Ubuntu 22.04, Debian 12, Debian 11, and Rocky Linux 9
+6. **Molecule Tests** — matrix across Ubuntu 26.04, Ubuntu 24.04, Ubuntu 22.04, Debian 13, Debian 12, Debian 11, and Rocky Linux 9
 7. **Merge Check** — aggregated status gate for branch protection
 
 ### Release & Publish

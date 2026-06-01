@@ -94,7 +94,6 @@ chrony_temp_compensation:
 chrony_client_settings:
   use_dhcp: false
   dhcp_sourcedir: "/run/chrony-dhcp"
-  conf_dir: "/etc/chrony/conf.d"
   initstepslew:
     threshold: 30
     enable: true
