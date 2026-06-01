@@ -2,6 +2,24 @@
 # Cross-field validations only. Simple type/defined/choice checks
 # are handled by meta/argument_specs.yml (§3.1.20).
 
+- name: Chrony | assert | Validate supported OS family
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['os_family'] | lower in ['redhat', 'debian']
+    fail_msg: "Unsupported OS family '{{ ansible_facts['os_family'] }}'. Supported: RedHat, Debian"
+    success_msg: "OS family: {{ ansible_facts['os_family'] }}"
+
+- name: Chrony | assert | Validate boolean flags
+  ansible.builtin.assert:
+    that:
+      - chrony_service_enabled is boolean
+      - chrony_configure_logrotate is boolean
+      - chrony_port_disabled is boolean
+      - chrony_bind_cmd_address_enable is boolean
+      - chrony_run_test is boolean
+      - chrony_local_stratum_enable is boolean
+    fail_msg: "Boolean flags must be true or false"
+
 - name: Chrony | assert | Validate step threshold format
   ansible.builtin.assert:
     that:
@@ -142,3 +160,33 @@
       Internal OS-specific variables are not loaded.
       Ensure that vars/ files are correctly structured for this OS family.
     success_msg: "All internal OS-specific variables are loaded"
+
+- name: Chrony | assert | Validate command key ID
+  ansible.builtin.assert:
+    that:
+      - (chrony_command_key_id | int) > 0
+    fail_msg: "Invalid command key ID '{{ chrony_command_key_id }}'. Must be a positive integer"
+    success_msg: "Command key ID is valid"
+
+- name: Chrony | assert | Validate log directory is absolute path
+  ansible.builtin.assert:
+    that:
+      - chrony_logdir_path is match('^/.+')
+    fail_msg: "Invalid log directory '{{ chrony_logdir_path }}'. Must be an absolute path"
+    success_msg: "Log directory is valid: {{ chrony_logdir_path }}"
+  when: chrony_log_enable | default(false)
+
+- name: Chrony | assert | Validate logrotate archive directory is absolute path
+  ansible.builtin.assert:
+    that:
+      - chrony_logrotate_options.archive_directory_path is match('^/.+')
+    fail_msg: "Invalid logrotate archive directory '{{ chrony_logrotate_options.archive_directory_path }}'. Must be an absolute path"
+    success_msg: "Logrotate archive directory is valid: {{ chrony_logrotate_options.archive_directory_path }}"
+  when: chrony_configure_logrotate | default(false)
+
+- name: Chrony | assert | Validate client configuration directory is absolute path
+  ansible.builtin.assert:
+    that:
+      - chrony_client_settings.conf_dir is match('^/.+')
+    fail_msg: "Invalid client configuration directory '{{ chrony_client_settings.conf_dir }}'. Must be an absolute path"
+    success_msg: "Client configuration directory is valid: {{ chrony_client_settings.conf_dir }}"
