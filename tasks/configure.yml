@@ -15,6 +15,15 @@
   when: >
     not chrony_service_enabled | default(false)
 
+- name: Chrony | configure | Ensure confdir directory exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ chrony_client_settings.conf_dir | default(__chrony_confdir_path) }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
 - name: Chrony | configure | Deploy Chrony configuration file
   become: true
   ansible.builtin.template:

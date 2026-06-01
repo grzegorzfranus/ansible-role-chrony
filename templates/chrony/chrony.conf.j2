@@ -133,7 +133,7 @@ sourcedir {{ chrony_client_settings.dhcp_sourcedir }}
 
 {% endif %}
 # Include configurations from external sources
-confdir {{ chrony_client_settings.conf_dir }}
+confdir {{ chrony_client_settings.conf_dir | default(__chrony_confdir_path) }}
 {% if chrony_client_settings.initstepslew.enable %}
 
 # Enable rapid synchronization at startup

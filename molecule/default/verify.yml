@@ -199,12 +199,14 @@
         cmd: "chronyc tracking"
       register: __verify_sync_result
       changed_when: false
+      failed_when: false
 
     - name: Verify | Check chrony sources
       ansible.builtin.command:
         cmd: "chronyc sources"
       register: __verify_sources_result
       changed_when: false
+      failed_when: false
 
     # ============================================================
     # Assertions

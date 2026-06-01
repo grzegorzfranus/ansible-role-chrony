@@ -40,9 +40,21 @@
           # Clear ConditionVirtualization for Molecule container testing.
           # Newer distros (Ubuntu 26.04+, Debian 13+) block chrony in containers.
           ConditionVirtualization=
+          # Clear ConditionCapability=CAP_SYS_TIME for container testing.
+          ConditionCapability=
+
+          [Service]
+          # Run chronyd in free-running mode (-x) inside Molecule containers.
+          # This avoids needing CAP_SYS_TIME to adjust the system clock.
+          ExecStart=
+          ExecStart=/usr/sbin/chronyd -x $DAEMON_OPTS
         mode: "0644"
         owner: root
         group: root
       loop:
         - /etc/systemd/system/chrony.service.d
         - /etc/systemd/system/chronyd.service.d
+
+    - name: Prepare | Reload systemd daemon after overrides
+      ansible.builtin.systemd:
+        daemon_reload: true
