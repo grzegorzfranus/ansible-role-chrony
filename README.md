@@ -54,15 +54,17 @@ External NTP Servers ←→ Chrony Server ←→ Local Clients
 ### Supported operating systems
 List of officially supported operating systems:
 | OS Family | Version | Status |
-|-----------|---------|---------|
+|-----------|---------|--------|
 | Ubuntu | 26.04 (Resolute) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Ubuntu | 24.04 (Noble) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Ubuntu | 22.04 (Jammy) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Debian | 13 (Trixie) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Debian | 12 (Bookworm) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
 | Debian | 11 (Bullseye) | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
-| Rocky Linux | 9 | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
-| Oracle Linux | 9 | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
+| EL (RHEL, Rocky, Alma, Oracle) | 9 | ![✓](https://img.shields.io/badge/✓-brightgreen.svg) |
+
+> **Note**: EL 8 is not supported — `python3-dnf` bindings are compiled for Python 3.6,
+> which is incompatible with ansible-core >= 2.17. Use EL 9 or newer.
 
 ### Ansible version
 
@@ -166,6 +168,9 @@ Customize for specific requirements:
 | `chrony_role_action` | Define which parts of the role to execute (Options: 'all', 'prerequisites', 'install', 'configure', 'logrotate', 'upgrade') | `"all"` |
 | `chrony_service_enabled` | Whether to enable Chrony service | `true` |
 | `chrony_configure_logrotate` | Enable/disable logrotate configuration for Chrony logs | `false` |
+| `chrony_port_disabled` | Disable NTP listening port (UDP 123) for client-only nodes | `false` |
+| `chrony_bind_cmd_address_enable` | Restrict command socket binding to specific loopback addresses | `true` |
+| `chrony_bind_cmd_addresses` | List of loopback addresses to bind the command interface to | `["127.0.0.1", "::1"]` |
 | `chrony_run_test` | Enable test mode (useful for debugging) | `false` |
 
 > **Note**: Service name, config path, package name, and other OS-specific values are set automatically via internal `__chrony_*` variables in `vars/{os_family}.yml`. See [`meta/argument_specs.yml`](meta/argument_specs.yml) for the full argument specification.
@@ -188,7 +193,11 @@ Customize for specific requirements:
 |----------|-------------|---------|
 | `chrony_command_key_id` | Key ID for NTP commands | `1` |
 | `chrony_default_access` | Default access policy (deny/allow) | `"deny"` |
-| `chrony_auth_settings` | Authentication settings (enable, selectmode) | See defaults/main.yml |
+| `chrony_local_stratum_enable` | Enable local reference source to serve time even when unsynchronized | `false` |
+| `chrony_local_stratum` | Stratum level to report when serving time unsynchronized | `10` |
+| `chrony_auth_settings` | Authentication settings dictionary | See below |
+| `chrony_auth_settings.enable` | Enable NTP authentication | `false` |
+| `chrony_auth_settings.selectmode` | Authentication select mode (Options: 'require', 'prefer', 'ignore') | `"require"` |
 | `chrony_ntp_clients` | List of allowed NTP clients | `[]` |
 
 ### Leap Second Settings
@@ -196,7 +205,10 @@ Customize for specific requirements:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `chrony_leapsectz` | Leap seconds timezone | `"right/UTC"` |
-| `chrony_leapsec_settings` | Leap second handling configuration | See defaults/main.yml |
+| `chrony_leapsec_settings` | Leap second handling configuration dictionary | See below |
+| `chrony_leapsec_settings.mode` | Leap second handling mode | `"slew"` |
+| `chrony_leapsec_settings.maxslewrate` | Maximum allowed slew rate in ppm | `1000.0` |
+| `chrony_leapsec_settings.smoothtime` | Smooth time transition configuration | `"400 0.001 leaponly"` |
 
 ### Logging Configuration
 
