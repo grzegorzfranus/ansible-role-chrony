@@ -47,10 +47,11 @@
           # Clear User= so chronyd runs as root (avoids "Not superuser" error).
           # Ubuntu 26.04+ sets User=_chrony which prevents clock operations.
           User=
-          # Run chronyd in free-running mode (-x) inside Molecule containers.
-          # This avoids needing CAP_SYS_TIME to adjust the system clock.
+          # Run chronyd in foreground (-n) free-running mode (-x) inside Molecule
+          # containers. -n keeps chronyd in foreground and sends sd_notify(READY)
+          # to satisfy the service's Type=notify. -x avoids adjusting system clock.
           ExecStart=
-          ExecStart=/usr/sbin/chronyd -x $DAEMON_OPTS
+          ExecStart=/usr/sbin/chronyd -n -x $DAEMON_OPTS
           # Clear security sandboxing that conflicts with container testing.
           ProtectSystem=
           ProtectHome=
