@@ -190,3 +190,102 @@
       - chrony_client_settings.conf_dir is match('^/.+')
     fail_msg: "Invalid client configuration directory '{{ chrony_client_settings.conf_dir }}'. Must be an absolute path"
     success_msg: "Client configuration directory is valid: {{ chrony_client_settings.conf_dir }}"
+
+- name: Chrony | assert | Validate auth settings
+  ansible.builtin.assert:
+    that:
+      - chrony_auth_settings.enable is boolean
+      - chrony_auth_settings.selectmode in ['require', 'prefer', 'ignore']
+    fail_msg: "Invalid chrony_auth_settings"
+    success_msg: "Auth settings are valid"
+
+- name: Chrony | assert | Validate leapsec settings
+  ansible.builtin.assert:
+    that:
+      - chrony_leapsec_settings.mode is string
+      - (chrony_leapsec_settings.maxslewrate | float) > 0
+      - chrony_leapsec_settings.smoothtime is string
+    fail_msg: "Invalid chrony_leapsec_settings"
+    success_msg: "Leapsec settings are valid"
+
+- name: Chrony | assert | Validate remaining logrotate options
+  ansible.builtin.assert:
+    that:
+      - chrony_logrotate_options.frequency in ['hourly', 'daily', 'weekly', 'monthly']
+      - chrony_logrotate_options.missingok is boolean
+      - chrony_logrotate_options.compress is boolean
+      - chrony_logrotate_options.nocreate is boolean
+      - chrony_logrotate_options.copytruncate is boolean
+      - chrony_logrotate_options.dateext is boolean
+    fail_msg: "Invalid chrony_logrotate_options"
+    success_msg: "Remaining logrotate options are valid"
+  when: chrony_configure_logrotate | default(false)
+
+- name: Chrony | assert | Validate remaining rtc settings
+  ansible.builtin.assert:
+    that:
+      - chrony_rtc_settings.rtcsync_enable is boolean
+      - chrony_rtc_settings.rtconutc_enable is boolean
+      - chrony_rtc_settings.rtcfile_enable is boolean
+      - chrony_rtc_settings.rtcautotrim_enable is boolean
+    fail_msg: "Invalid chrony_rtc_settings"
+    success_msg: "Remaining rtc settings are valid"
+
+- name: Chrony | assert | Validate hardware settings
+  ansible.builtin.assert:
+    that:
+      - chrony_hardware_settings.enable_hw_timestamp is boolean
+      - chrony_hardware_settings.hw_timestamp_interfaces is string
+      - chrony_hardware_settings.refclock_enable is boolean
+      - chrony_hardware_settings.refclock_precision is string
+    fail_msg: "Invalid chrony_hardware_settings"
+    success_msg: "Hardware settings are valid"
+
+- name: Chrony | assert | Validate hardware refclock path
+  ansible.builtin.assert:
+    that:
+      - chrony_hardware_settings.refclock_pps is match('^/.+')
+    fail_msg: "chrony_hardware_settings.refclock_pps must be an absolute path"
+    success_msg: "Hardware refclock path is valid"
+  when: chrony_hardware_settings.refclock_enable | default(false)
+
+- name: Chrony | assert | Validate system settings
+  ansible.builtin.assert:
+    that:
+      - chrony_system_settings.dumpdir is match('^/.+')
+    fail_msg: "chrony_system_settings.dumpdir must be an absolute path"
+    success_msg: "System settings are valid"
+
+- name: Chrony | assert | Validate temperature compensation settings
+  ansible.builtin.assert:
+    that:
+      - chrony_temp_compensation.enable is boolean
+    fail_msg: "chrony_temp_compensation.enable must be boolean"
+    success_msg: "Temperature compensation enable flag is valid"
+
+- name: Chrony | assert | Validate temperature compensation paths
+  ansible.builtin.assert:
+    that:
+      - chrony_temp_compensation.sensor_file is match('^/.+')
+      - (chrony_temp_compensation.update_interval | int) > 0
+      - chrony_temp_compensation.config_file is match('^/.+')
+    fail_msg: "Invalid temperature compensation configuration"
+    success_msg: "Temperature compensation paths are valid"
+  when: chrony_temp_compensation.enable | default(false)
+
+- name: Chrony | assert | Validate remaining client settings
+  ansible.builtin.assert:
+    that:
+      - chrony_client_settings.use_dhcp is boolean
+      - chrony_client_settings.initstepslew.enable is boolean
+      - (chrony_client_settings.initstepslew.threshold | int) > 0
+    fail_msg: "Invalid chrony_client_settings"
+    success_msg: "Remaining client settings are valid"
+
+- name: Chrony | assert | Validate client DHCP directory
+  ansible.builtin.assert:
+    that:
+      - chrony_client_settings.dhcp_sourcedir is match('^/.+')
+    fail_msg: "chrony_client_settings.dhcp_sourcedir must be an absolute path"
+    success_msg: "Client DHCP directory is valid"
+  when: chrony_client_settings.use_dhcp | default(false)
