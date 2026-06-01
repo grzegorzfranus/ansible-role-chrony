@@ -88,13 +88,12 @@
           ansible.builtin.debug:
             msg: "IPv6 available: {{ __converge_debug_ipv6.rc == 0 }}, interfaces: {{ __converge_debug_ipv6.stdout_lines | default([]) }}"
 
-        - name: Converge | Debug | Try chronyd dry-run
+        - name: Converge | Debug | Try chronyd config validation
           ansible.builtin.command:
-            cmd: "chronyd -d -f /etc/chrony/chrony.conf"
+            cmd: "chronyd -p -f /etc/chrony/chrony.conf"
           register: __converge_debug_dryrun
           changed_when: false
           failed_when: false
-          timeout: 5
           ignore_errors: true
 
         - name: Converge | Debug | Show chronyd dry-run output

@@ -114,13 +114,12 @@
       ansible.builtin.debug:
         msg: "confdir /etc/chrony/conf.d exists: {{ __verify_debug_confdir.stat.exists }}"
 
-    - name: Verify | Debug | Try chronyd dry-run
+    - name: Verify | Debug | Try chronyd config validation
       ansible.builtin.command:
-        cmd: "chronyd -d -f {{ __chrony_config_path }}"
+        cmd: "chronyd -p -f {{ __chrony_config_path }}"
       register: __verify_debug_dryrun
       changed_when: false
       failed_when: false
-      timeout: 5
       ignore_errors: true
 
     - name: Verify | Debug | Show chronyd dry-run output
