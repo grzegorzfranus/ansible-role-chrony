@@ -118,7 +118,7 @@ argument_specs:
       chrony_ntp_clients:
         description: >-
           List of allowed NTP clients.
-          Format: "allow|deny <network>" (e.g., "allow 192.168.0.0/16").
+          Format: "allow|deny <network>" (e.g., "allow 192.0.2.0/24").
         type: list
         elements: str
         default: []

@@ -1,5 +1,10 @@
 ---
-# Debian-specific variables (internal, not user-configurable)
+# =============================================================================
+# Ansible Role: Chrony - Debian Variables
+# =============================================================================
+# Debian-specific variables.
+# These are NOT user-overridable. All use double-underscore prefix per CoP §3.1.4.
+# =============================================================================
 
 # Service names
 __chrony_service_name: "chrony"

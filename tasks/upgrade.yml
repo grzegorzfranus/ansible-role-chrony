@@ -1,4 +1,10 @@
 ---
+# =============================================================================
+# Ansible Role: Chrony - Tasks: Upgrade
+# =============================================================================
+# Upgrade Chrony packages to the latest version.
+# =============================================================================
+
 - name: Chrony | upgrade | Upgrade Chrony package to the latest version # noqa: package-latest
   become: true
   notify: restart chrony

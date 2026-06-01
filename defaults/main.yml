@@ -1,58 +1,154 @@
 ---
-# User-configurable defaults for the Chrony role.
-# See meta/argument_specs.yml for full documentation.
+# =============================================================================
+# Ansible Role: Chrony - Default Variables
+# =============================================================================
+# This file defines default configuration values for the Chrony NTP role.
+# These values can be overridden by setting them in your playbook or inventory.
+#
+# Supported OS distributions:
+# - Ubuntu 26.04 (Resolute) and variants
+# - Ubuntu 24.04 (Noble) and variants
+# - Ubuntu 22.04 (Jammy) and variants
+# - Debian 13 (Trixie) and variants
+# - Debian 12 (Bookworm) and variants
+# - Debian 11 (Bullseye) and variants
+# - EL9: Rocky Linux 9, RHEL 9, AlmaLinux 9, CentOS Stream 9
+#
+# Sections:
+#   1. General Settings
+#   2. NTP Source Configuration
+#   3. Security Settings
+#   4. Leap Seconds Configuration
+#   5. Logging Configuration
+#   6. Logrotate Configuration
+#   7. Real Time Clock (RTC) Settings
+#   8. Hardware Timestamping Settings
+#   9. System Performance Settings
+#   10. NTP Client Options
+# =============================================================================
 
-# General settings
+# -----------------------------------------------------------------------------
+# 1. General Settings
+# -----------------------------------------------------------------------------
+# Role execution control and basic service configuration
+
+# Action to perform: 'all' to install and configure, 'check' to verify
 chrony_role_action: "all"
+
+# Ensure the chrony service is enabled and running
 chrony_service_enabled: true
+
+# Whether to configure logrotate for chrony logs
 chrony_configure_logrotate: false
+
+# Disable the NTP port (force chrony to operate as a client-only daemon)
 chrony_port_disabled: false
+
+# Enable binding command interface to specific addresses
 chrony_bind_cmd_address_enable: true
+
+# List of IP addresses to bind the command interface to
 chrony_bind_cmd_addresses:
   - "127.0.0.1"
   - "::1"
+
+# Run integration tests after configuration
 chrony_run_test: false
 
-# NTP source configuration
+# -----------------------------------------------------------------------------
+# 2. NTP Source Configuration
+# -----------------------------------------------------------------------------
+# Configure NTP servers and peers
+
+# NTP source mode (server, peer, pool)
 chrony_ntp_source_mode: "server"
+
+# List of NTP servers to synchronize with
 chrony_ntp_servers:
   - "0.pool.ntp.org iburst minpoll 4 maxpoll 8"
   - "1.pool.ntp.org iburst minpoll 4 maxpoll 8"
   - "2.pool.ntp.org iburst minpoll 4 maxpoll 8"
   - "3.pool.ntp.org iburst minpoll 4 maxpoll 8"
+
+# Maximum distance to allow synchronization (seconds)
 chrony_maxdistance: 3.0
+
+# Directory where NTS dump files are stored
 chrony_ntsdumpdir: "/var/lib/chrony"
+
+# Minimum number of sources required to synchronize
 chrony_num_minsources: 1
+
+# Maximum allowed skew of the system clock updates
 chrony_maxupdateskew: 100.0
+
+# Stepping behavior to correct clock skew immediately
 chrony_makestep: "1.0 3"
 
 # NOTE: driftfile and keyfile paths are set per-OS in vars/{os_family}.yml
 # as internal variables: __chrony_driftfile_path, __chrony_keyfile_path
 
-# Security
+# -----------------------------------------------------------------------------
+# 3. Security Settings
+# -----------------------------------------------------------------------------
+# Access control, stratum, client access, and authentication settings
+
+# Key ID to authenticate command queries
 chrony_command_key_id: 1
+
+# Default access control policy for NTP clients
 chrony_default_access: "deny"
+
+# Enable local stratum if system is not synchronized
 chrony_local_stratum_enable: false
+
+# Stratum level to report when operating locally unsynchronized
 chrony_local_stratum: 10
+
+# List of NTP clients allowed to synchronize with this host.
+# Always use RFC-reserved documentation subnets for examples:
+# - allow 192.0.2.0/24
+# - allow 198.51.100.0/24
 chrony_ntp_clients: []
+
+# Client authentication settings
 chrony_auth_settings:
   enable: false
   selectmode: "require"
 
-# Leap seconds
+# -----------------------------------------------------------------------------
+# 4. Leap Seconds Configuration
+# -----------------------------------------------------------------------------
+# Configure timezone and slew rate for leap second corrections
+
 chrony_leapsectz: "right/UTC"
 chrony_leapsec_settings:
   mode: "slew"
   maxslewrate: 1000.0
   smoothtime: "400 0.001 leaponly"
 
-# Logging
+# -----------------------------------------------------------------------------
+# 5. Logging Configuration
+# -----------------------------------------------------------------------------
+# Configure log storage, log dir, and change thresholds
+
+# Enable logging of chrony statistics
 chrony_log_enable: true
+
+# Path to the directory where chrony logs are stored
 chrony_logdir_path: "/var/log/chrony"
+
+# Log files to write (measurements, statistics, tracking)
 chrony_log_options: "measurements statistics tracking"
+
+# Threshold for logging clock updates (seconds)
 chrony_logchange: "0.5"
 
-# Logrotate
+# -----------------------------------------------------------------------------
+# 6. Logrotate Configuration
+# -----------------------------------------------------------------------------
+# Configure log rotation policy for chrony log files
+
 chrony_logrotate_options:
   archive_directory_path: "/var/log/chrony/archive"
   frequency: "daily"
@@ -63,7 +159,12 @@ chrony_logrotate_options:
   copytruncate: false
   dateext: true
 
-# RTC — rtcautotrim is ONLY effective with rtcfile enabled (chrony docs)
+# -----------------------------------------------------------------------------
+# 7. Real Time Clock (RTC) Settings
+# -----------------------------------------------------------------------------
+# Hardware RTC synchronization options
+
+# Enable RTC synchronization
 chrony_rtc_settings:
   rtcsync_enable: true
   rtconutc_enable: true
@@ -73,7 +174,11 @@ chrony_rtc_settings:
   rtcautotrim_interval: 30
   rtcdevice: ""
 
-# Hardware timestamping
+# -----------------------------------------------------------------------------
+# 8. Hardware Timestamping Settings
+# -----------------------------------------------------------------------------
+# Advanced hardware NIC timestamping and PPS options
+
 chrony_hardware_settings:
   enable_hw_timestamp: false
   hw_timestamp_interfaces: "*"
@@ -81,7 +186,11 @@ chrony_hardware_settings:
   refclock_pps: "/dev/pps0"
   refclock_precision: "1e-7"
 
-# System performance
+# -----------------------------------------------------------------------------
+# 9. System Performance Settings
+# -----------------------------------------------------------------------------
+# System dump directories and temp compensation
+
 chrony_system_settings:
   dumpdir: "/var/lib/chrony"
 
@@ -91,7 +200,11 @@ chrony_temp_compensation:
   update_interval: 30
   config_file: "/etc/chrony/tempcomp"
 
-# NTP client options
+# -----------------------------------------------------------------------------
+# 10. NTP Client Options
+# -----------------------------------------------------------------------------
+# DHCP sourcing options and initstepslew thresholds
+
 chrony_client_settings:
   use_dhcp: false
   dhcp_sourcedir: "/run/chrony-dhcp"

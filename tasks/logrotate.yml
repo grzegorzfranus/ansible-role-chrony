@@ -1,4 +1,10 @@
 ---
+# =============================================================================
+# Ansible Role: Chrony - Tasks: Logrotate
+# =============================================================================
+# Configure logrotate for Chrony logs.
+# =============================================================================
+
 - name: Chrony | logrotate | Ensure archive log directory exists
   become: true
   ansible.builtin.file:

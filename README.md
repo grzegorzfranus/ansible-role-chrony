@@ -96,7 +96,7 @@ This role requires root access for package installation and service management. 
       vars:
         chrony_ntp_source_mode: "server"
         chrony_ntp_clients:
-          - "allow 192.168.0.0/16"
+          - "allow 192.0.2.0/24"
 ```
 
 ### 3. Run the playbook
@@ -304,8 +304,8 @@ sudo journalctl -u chrony -f
 # Restrict client access
 chrony_default_access: "deny"
 chrony_ntp_clients:
-  - "allow 192.168.1.0/24"
-  - "deny 192.168.1.100"
+  - "allow 192.0.2.0/24"
+  - "deny 192.0.2.100"
 
 # Enable authentication
 chrony_auth_settings:
