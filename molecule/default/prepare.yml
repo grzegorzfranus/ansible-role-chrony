@@ -47,9 +47,13 @@
           # Clear User= so chronyd runs as root (avoids "Not superuser" error).
           # Ubuntu 26.04+ sets User=_chrony which prevents clock operations.
           User=
+          # Override service type for container testing compatibility.
+          # Debian uses Type=notify, RHEL uses Type=forking — both conflict
+          # with chronyd -n (foreground mode). Type=simple works universally.
+          Type=simple
           # Run chronyd in foreground (-n) free-running mode (-x) inside Molecule
-          # containers. -n keeps chronyd in foreground and sends sd_notify(READY)
-          # to satisfy the service's Type=notify. -x avoids adjusting system clock.
+          # containers. -n keeps chronyd in foreground (matches Type=simple).
+          # -x avoids adjusting system clock (no CAP_SYS_TIME needed).
           ExecStart=
           ExecStart=/usr/sbin/chronyd -n -x $DAEMON_OPTS
           # Clear security sandboxing that conflicts with container testing.
