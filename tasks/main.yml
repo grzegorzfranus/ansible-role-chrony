@@ -3,7 +3,6 @@
 # Ansible Role: Chrony - Tasks: Main
 # =============================================================================
 # Main task orchestrator for the Chrony role.
-# Flow: vars → assert → prerequisites → install → configure → logrotate → upgrade → test
 # =============================================================================
 
 - name: Chrony | include_vars | Gather OS specific variables
