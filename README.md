@@ -476,6 +476,7 @@ Contributions, bug reports, and feature requests are welcome!
 
 - Fork the repository and create your branch from `main`
 - Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
+- Centralized workflows from [github-workflows](https://github.com/grzegorzfranus/github-workflows) version `v3.0.1` are used to run CI/CD pipelines
 - Ensure your code passes all CI checks (YAML lint, Ansible lint, Molecule tests)
 - Submit a pull request describing your changes (a template is available under `.github/PULL_REQUEST_TEMPLATE/pull_request_template.md` to help structure your PR description)
 - For major changes, please open an issue first to discuss what you would like to change (issue templates for bug reports, feature requests, and tasks are available under `.github/ISSUE_TEMPLATE/`)
