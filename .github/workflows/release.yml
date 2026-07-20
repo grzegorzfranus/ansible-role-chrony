@@ -107,6 +107,6 @@ jobs:
     name: "Publish to Galaxy"
     needs: [release-please]
     if: needs.release-please.outputs.release_created == 'true'
-    uses: grzegorzfranus/github-workflows/.github/workflows/ansible-publish.yml@main
+    uses: grzegorzfranus/github-workflows/.github/workflows/ansible-publish.yml@v3.0.1
     secrets:
       galaxy-api-key: ${{ secrets.GALAXY_API_KEY }}
