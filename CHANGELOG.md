@@ -5,6 +5,13 @@ All notable changes to this Chrony NTP role will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.6](https://github.com/grzegorzfranus/ansible-role-chrony/compare/v2.4.5...v2.4.6) (2026-07-20)
+
+
+### CI/CD
+
+* **34:** upgrade github workflows to v3.0.1 and update documentation ([#36](https://github.com/grzegorzfranus/ansible-role-chrony/issues/36)) ([9863d36](https://github.com/grzegorzfranus/ansible-role-chrony/commit/9863d367c430af24aa044fb66326e9a2075f243c))
+
 ## [2.4.5](https://github.com/grzegorzfranus/ansible-role-chrony/compare/v2.4.4...v2.4.5) (2026-06-29)
 
 
