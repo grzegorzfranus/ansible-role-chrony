@@ -5,6 +5,13 @@ All notable changes to this Chrony NTP role will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.8](https://github.com/grzegorzfranus/ansible-role-chrony/compare/v2.4.7...v2.4.8) (2026-07-21)
+
+
+### Documentation
+
+* **tasks:** add execution flow comment to tasks main orchestrator ([#42](https://github.com/grzegorzfranus/ansible-role-chrony/issues/42)) ([386aa08](https://github.com/grzegorzfranus/ansible-role-chrony/commit/386aa08736ed84103d9056f258bee2b5a20cbb08))
+
 ## [2.4.7](https://github.com/grzegorzfranus/ansible-role-chrony/compare/v2.4.6...v2.4.7) (2026-07-21)
 
 
