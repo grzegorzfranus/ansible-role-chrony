@@ -6,19 +6,19 @@
 {{ chrony_logdir_path }}/*.log {
     {{ chrony_logrotate_options.frequency }}
     rotate {{ chrony_logrotate_options.count }}
-    {% if chrony_logrotate_options.missingok %}
+    {% if chrony_logrotate_options.missingok | bool %}
     missingok
     {% endif %}
-    {% if chrony_logrotate_options.compress %}
+    {% if chrony_logrotate_options.compress | bool %}
     compress
     {% endif %}
-    {% if chrony_logrotate_options.nocreate %}
+    {% if chrony_logrotate_options.nocreate | bool %}
     nocreate
     {% endif %}
-    {% if chrony_logrotate_options.copytruncate %}
+    {% if chrony_logrotate_options.copytruncate | bool %}
     copytruncate
     {% endif %}
-    {% if chrony_logrotate_options.dateext %}
+    {% if chrony_logrotate_options.dateext | bool %}
     dateext
     dateformat .%Y-%m-%d
     {% endif %}

@@ -36,6 +36,13 @@
         that:
           - __verify_logrotate_file.stat.exists
 
+    - name: Verify | Assert logrotate config ownership and mode
+      ansible.builtin.assert:
+        that:
+          - __verify_logrotate_file.stat.pw_name == 'root'
+          - __verify_logrotate_file.stat.gr_name == 'root'
+          - __verify_logrotate_file.stat.mode == '0644'
+
     - name: Verify | Validate logrotate dry-run execution
       ansible.builtin.command:
         cmd: "logrotate -d /etc/logrotate.d/chrony"

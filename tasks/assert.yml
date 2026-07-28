@@ -224,7 +224,7 @@
     that:
       - chrony_log_options is string
       - chrony_log_options | length > 0
-      - chrony_log_options is regex('^[a-z ]+$')
+      - chrony_log_options.split() | difference(['measurements', 'statistics', 'tracking', 'rtc', 'refclocks', 'tempcomp']) | length == 0
     fail_msg: >-
       Invalid log options '{{ chrony_log_options }}'.
       Must be space-separated valid options: measurements, statistics, tracking, rtc, refclocks, tempcomp
@@ -247,12 +247,13 @@
   ansible.builtin.assert:
     that:
       - chrony_leapsectz is string
-      - chrony_leapsectz | length > 0
       - chrony_leapsectz is regex('^[a-zA-Z0-9_/\-]+$')
     fail_msg: >-
       Invalid leap seconds timezone '{{ chrony_leapsectz }}'.
-      Must be a valid timezone identifier (e.g., 'right/UTC', 'UTC')
+      Must be a valid timezone identifier (e.g., 'right/UTC', 'UTC').
+      Set to an empty string to disable leapsectz.
     success_msg: "Leap seconds timezone is valid: {{ chrony_leapsectz }}"
+  when: chrony_leapsectz | default('') | length > 0
 
 - name: Chrony | assert | Validate logrotate archive directory is absolute path
   ansible.builtin.assert:

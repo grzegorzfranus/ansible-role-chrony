@@ -57,7 +57,7 @@ bindcmdaddress {{ addr }}
 
 # Local reference source (only if acting as isolated master NTP server)
 local stratum {{ chrony_local_stratum | default(10) }}
-{% endif %}{% if chrony_auth_settings.enable %}
+{% endif %}{% if chrony_auth_settings.enable | bool %}
 
 # Enable NTP authentication
 authselectmode {{ chrony_auth_settings.selectmode }}
@@ -80,7 +80,7 @@ smoothtime {{ chrony_leapsec_settings.smoothtime }}
 {% endif %}
 
 # Logging and Monitoring
-{% if chrony_log_enable %}
+{% if chrony_log_enable | bool %}
 # Log directory location
 logdir {{ chrony_logdir_path }}
 
@@ -123,22 +123,22 @@ refclock PPS {{ chrony_hardware_settings.refclock_pps }} refid PPS precision {{ 
 # System Performance
 # Directory for storing clock state dumps
 dumpdir {{ chrony_system_settings.dumpdir }}
-{% if chrony_temp_compensation.enable %}
+{% if chrony_temp_compensation.enable | bool %}
 
 # Temperature compensation
 tempcomp {{ chrony_temp_compensation.sensor_file }} {{ chrony_temp_compensation.update_interval }} {{ chrony_temp_compensation.config_file }}
 {% endif %}
 
 # NTP Client Options
-{% if chrony_client_settings.use_dhcp %}
+{% if chrony_client_settings.use_dhcp | bool %}
 # Acquire servers from DHCP
 sourcedir {{ chrony_client_settings.dhcp_sourcedir }}
 
 {% endif %}
 # Include configurations from external sources
 confdir {{ chrony_client_settings.conf_dir | default(__chrony_confdir_path) }}
-{% if chrony_client_settings.initstepslew.enable %}
+{% if chrony_client_settings.initstepslew.enable | bool %}
 
 # Enable rapid synchronization at startup
-initstepslew {{ chrony_client_settings.initstepslew.threshold }} {{ chrony_ntp_servers[0] if chrony_ntp_servers else "" }}
+initstepslew {{ chrony_client_settings.initstepslew.threshold }} {{ chrony_ntp_servers | map('regex_replace', ' .*', '') | join(' ') }}
 {% endif %}

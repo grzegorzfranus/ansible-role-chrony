@@ -222,6 +222,7 @@ Customize for specific requirements:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `chrony_system_settings` | System performance dictionary (`dumpdir`) | *See defaults/main.yml* |
 | `chrony_system_settings.dumpdir` | Directory for storing clock state dumps | `"/var/lib/chrony"` |
 
 ### Temperature Compensation
