@@ -1,0 +1,37 @@
+---
+- name: molecule | Converge Logging Scenario
+  hosts: all
+
+  pre_tasks:
+    - name: Converge | Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 600
+      changed_when: false
+      when: >
+        ansible_facts['os_family'] == "Debian"
+
+    - name: Converge | Update dnf cache
+      ansible.builtin.dnf:
+        update_cache: true
+      changed_when: false
+      when: >
+        ansible_facts['os_family'] == "RedHat"
+
+  tasks:
+    - name: Converge | Execute chrony role with logging & logrotate enabled
+      ansible.builtin.include_role:
+        name: "{{ playbook_dir }}/../.."
+      vars:
+        chrony_log_enable: true
+        chrony_logdir_path: "/var/log/chrony-test"
+        chrony_configure_logrotate: true
+        chrony_logrotate_options:
+          frequency: "daily"
+          count: 7
+          missingok: true
+          compress: true
+          nocreate: false
+          copytruncate: true
+          dateext: true
+          archive_directory_path: "/var/log/chrony-test/archive"

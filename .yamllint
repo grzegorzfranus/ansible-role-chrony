@@ -5,7 +5,8 @@ rules:
   comments:
     min-spaces-from-content: 1
   comments-indentation: false
-  truthy: disable
+  truthy:
+    allowed-values: ["true", "false", "yes", "no"]
   line-length:
     max: 200
     level: warning

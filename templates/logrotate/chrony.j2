@@ -3,7 +3,7 @@
 
 # Log rotation configuration for chrony
 
-/var/log/chrony/*.log {
+{{ chrony_logdir_path }}/*.log {
     {{ chrony_logrotate_options.frequency }}
     rotate {{ chrony_logrotate_options.count }}
     {% if chrony_logrotate_options.missingok %}

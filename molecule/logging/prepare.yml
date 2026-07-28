@@ -1,0 +1,81 @@
+---
+- name: molecule | Prepare
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Prepare | Fix /etc/shadow permissions
+      ansible.builtin.file:
+        path: /etc/shadow
+        mode: "0400"
+
+    - name: Prepare | Ensure /etc/chrony directory exists
+      ansible.builtin.file:
+        path: /etc/chrony
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+      ignore_errors: true
+
+    - name: Prepare | Install logrotate package on Debian/Ubuntu
+      ansible.builtin.apt:
+        name: logrotate
+        state: present
+        update_cache: true
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Prepare | Install logrotate package on RedHat
+      ansible.builtin.dnf:
+        name: logrotate
+        state: present
+        update_cache: true
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: Prepare | Create systemd override directories for chrony
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+      loop:
+        - /etc/systemd/system/chrony.service.d
+        - /etc/systemd/system/chronyd.service.d
+
+    - name: Prepare | Override ConditionVirtualization for container testing
+      ansible.builtin.copy:
+        dest: "{{ item }}/override.conf"
+        content: |
+          [Unit]
+          ConditionVirtualization=
+          ConditionCapability=
+
+          [Service]
+          User=
+          Type=simple
+          ExecStart=
+          ExecStart=/usr/sbin/chronyd -n -x $DAEMON_OPTS
+          ProtectSystem=
+          ProtectHome=
+          PrivateTmp=
+          NoNewPrivileges=
+          ProtectKernelTunables=
+          ProtectControlGroups=
+          ProtectHostname=
+          ProtectKernelLogs=
+          ProtectKernelModules=
+          LogsDirectory=
+          StateDirectory=
+          RuntimeDirectory=
+          ConfigurationDirectory=
+        mode: "0644"
+        owner: root
+        group: root
+      loop:
+        - /etc/systemd/system/chrony.service.d
+        - /etc/systemd/system/chronyd.service.d
+
+    - name: Prepare | Reload systemd daemon after overrides
+      ansible.builtin.systemd:
+        daemon_reload: true

@@ -315,19 +315,14 @@ chrony_auth_settings:
 
 ### Uninstall
 
-To remove Chrony and its configuration from a host:
+Automated removal is not currently in scope for this role. To remove Chrony
+manually, stop the service and remove the package using your distribution's
+package manager:
 
-```yaml
----
-- name: Uninstall Chrony
-  hosts: all
-  become: true
-  roles:
-    - role: grzegorzfranus.chrony
-      vars:
-        chrony_role_action: "uninstall"
+```bash
+sudo systemctl disable --now chronyd   # 'chrony' on Debian/Ubuntu
+sudo apt remove chrony                 # or: sudo dnf remove chrony
 ```
-*Note: Service removal is typically done by running standard package uninstall commands or overriding variables to remove.*
 
 ### Roll-back Capabilities
 

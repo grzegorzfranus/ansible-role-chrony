@@ -24,5 +24,7 @@
     src: "logrotate/chrony.j2"
     dest: "{{ __chrony_logrotate_config_path }}"
     owner: root
+    group: root
     mode: "0644"
+    validate: "logrotate -d %s"
     backup: true

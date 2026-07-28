@@ -11,7 +11,7 @@
     name: "{{ __chrony_service_name }}"
     enabled: true
   when: >
-    chrony_service_enabled | default(false)
+    chrony_service_enabled | default(false) | bool
 
 - name: Chrony | configure | Disable Chrony service on system startup
   become: true
@@ -19,7 +19,7 @@
     name: "{{ __chrony_service_name }}"
     enabled: false
   when: >
-    not chrony_service_enabled | default(false)
+    not (chrony_service_enabled | default(false) | bool)
 
 - name: Chrony | configure | Ensure confdir directory exists
   become: true
@@ -44,8 +44,8 @@
     mode: "0644"
     owner: root
     group: root
+    validate: "{{ __chrony_binary_path }} -p -f %s"
     backup: true
-  # chrony does not provide a built-in config validation command (like nginx -t)
   notify: restart chrony
 
 - name: Chrony | configure | Ensure log directory exists
