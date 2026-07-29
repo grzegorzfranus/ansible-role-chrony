@@ -44,8 +44,10 @@
     mode: "0644"
     owner: root
     group: root
-    validate: "{{ __chrony_binary_path }} -u root -p -f %s"
     backup: true
+  # Note: chronyd drops root privileges to unprivileged user (_chrony/chrony)
+  # during config parsing, which causes Permission denied when reading Ansible's
+  # temporary validation files in /root/.ansible/tmp/.
   notify: restart chrony
 
 - name: Chrony | configure | Ensure log directory exists
