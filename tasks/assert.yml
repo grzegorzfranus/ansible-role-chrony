@@ -2,8 +2,14 @@
 # =============================================================================
 # Ansible Role: Chrony - Tasks: Assert
 # =============================================================================
-# Cross-field validations only. Simple type/defined/choice checks
-# are handled by meta/argument_specs.yml (§3.1.20).
+# Runtime validation layer (Red Hat CoP — dual-layer validation).
+# Primary responsibility: regex/format checks, range checks, and cross-field
+# consistency that cannot be expressed declaratively.
+#
+# Note: a small number of choice checks (role_action, ntp_source_mode,
+# default_access) intentionally duplicate meta/argument_specs.yml as
+# defence-in-depth for invocation paths where argument-spec validation
+# does not run.
 # =============================================================================
 
 - name: Chrony | assert | Validate supported OS family
@@ -54,10 +60,11 @@
 - name: Chrony | assert | Validate step threshold format
   ansible.builtin.assert:
     that:
-      - chrony_makestep is search('^[0-9]+\.[0-9]+ [0-9]+$')
+      - chrony_makestep is search('^[0-9]+(\.[0-9]+)? -?[0-9]+$')
     fail_msg: >-
       Invalid step threshold '{{ chrony_makestep }}'.
-      Must be in format '<threshold> <limit>' (e.g., '1.0 3')
+      Must be '<threshold> <limit>' (e.g., '1.0 3').
+      A negative limit (e.g., '1.0 -1') steps the clock on every measurement.
     success_msg: "Step threshold format is valid: {{ chrony_makestep }}"
 
 - name: Chrony | assert | Validate NTP server list is not empty
@@ -298,7 +305,7 @@
       - chrony_logrotate_options.dateext is boolean
     fail_msg: "Invalid chrony_logrotate_options"
     success_msg: "Remaining logrotate options are valid"
-  when: chrony_configure_logrotate | default(false)
+  when: chrony_configure_logrotate | default(false) | bool
 
 - name: Chrony | assert | Validate remaining rtc settings
   ansible.builtin.assert:
@@ -326,7 +333,7 @@
       - chrony_hardware_settings.refclock_pps is match('^/.+')
     fail_msg: "chrony_hardware_settings.refclock_pps must be an absolute path"
     success_msg: "Hardware refclock path is valid"
-  when: chrony_hardware_settings.refclock_enable | default(false)
+  when: chrony_hardware_settings.refclock_enable | default(false) | bool
 
 - name: Chrony | assert | Validate system settings
   ansible.builtin.assert:
@@ -350,7 +357,7 @@
       - chrony_temp_compensation.config_file is match('^/.+')
     fail_msg: "Invalid temperature compensation configuration"
     success_msg: "Temperature compensation paths are valid"
-  when: chrony_temp_compensation.enable | default(false)
+  when: chrony_temp_compensation.enable | default(false) | bool
 
 - name: Chrony | assert | Validate remaining client settings
   ansible.builtin.assert:
@@ -367,4 +374,4 @@
       - chrony_client_settings.dhcp_sourcedir is match('^/.+')
     fail_msg: "chrony_client_settings.dhcp_sourcedir must be an absolute path"
     success_msg: "Client DHCP directory is valid"
-  when: chrony_client_settings.use_dhcp | default(false)
+  when: chrony_client_settings.use_dhcp | default(false) | bool

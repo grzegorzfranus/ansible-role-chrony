@@ -94,6 +94,7 @@ argument_specs:
         description: >-
           Step clock if offset is larger than threshold.
           Format: '<threshold> <limit>' (e.g., '1.0 3').
+          A negative limit (e.g., '1.0 -1') steps on every measurement.
         type: str
         default: "1.0 3"
       chrony_command_key_id:
