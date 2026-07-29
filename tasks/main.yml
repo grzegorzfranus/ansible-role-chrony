@@ -60,7 +60,7 @@
   ansible.builtin.include_tasks: logrotate.yml
   when: >
     chrony_role_action in ['all', 'configure', 'logrotate'] and
-    chrony_configure_logrotate | default(false)
+    chrony_configure_logrotate | default(false) | bool
   tags:
     - chrony_config
     - chrony_logrotate
@@ -76,7 +76,7 @@
   ansible.builtin.include_tasks: test.yml
   when: >
     chrony_role_action in ['all', 'configure', 'logrotate', 'upgrade' ] and
-    chrony_run_test | default(false)
+    chrony_run_test | default(false) | bool
   tags:
     - chrony_test
     - chrony_verify

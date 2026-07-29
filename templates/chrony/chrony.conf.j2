@@ -39,7 +39,7 @@ keyfile {{ __chrony_keyfile_path }}
 ntsdumpdir {{ chrony_ntsdumpdir }}
 
 # Restrict command binding to loopback interfaces
-{% if chrony_bind_cmd_address_enable | default(true) %}
+{% if chrony_bind_cmd_address_enable | default(true) | bool %}
 {% for addr in chrony_bind_cmd_addresses | default(['127.0.0.1', '::1']) %}
 bindcmdaddress {{ addr }}
 {% endfor %}
@@ -49,19 +49,19 @@ bindcmdaddress {{ addr }}
 {{ chrony_default_access }} all
 {% if chrony_ntp_clients is defined and chrony_ntp_clients|length > 0 %}
 
-# Allow specific trusted clients
+# Client access policies
 {% for client in chrony_ntp_clients %}
-allow {{ client }}
+{{ client }}
 {% endfor %}
-{% endif %}{% if chrony_local_stratum_enable | default(false) %}
+{% endif %}{% if chrony_local_stratum_enable | default(false) | bool %}
 
 # Local reference source (only if acting as isolated master NTP server)
 local stratum {{ chrony_local_stratum | default(10) }}
-{% endif %}{% if chrony_auth_settings.enable %}
+{% endif %}{% if chrony_auth_settings.enable | bool %}
 
 # Enable NTP authentication
 authselectmode {{ chrony_auth_settings.selectmode }}
-{% endif %}{% if chrony_port_disabled | default(false) %}
+{% endif %}{% if chrony_port_disabled | default(false) | bool %}
 
 # Disable listening port for client-only nodes (security hardening)
 port 0
@@ -69,7 +69,7 @@ port 0
 
 # Leap Second Handling
 {% if chrony_leapsectz is defined and chrony_leapsectz | length > 0 and
-      __chrony_leapsectz_file.stat.exists | default(false) %}
+      __chrony_leapsectz_file.stat.exists | default(false) | bool %}
 # Get TAI-UTC offset and leap second announcements from the system database
 leapsectz {{ chrony_leapsectz }}
 
@@ -80,7 +80,7 @@ smoothtime {{ chrony_leapsec_settings.smoothtime }}
 {% endif %}
 
 # Logging and Monitoring
-{% if chrony_log_enable %}
+{% if chrony_log_enable | bool %}
 # Log directory location
 logdir {{ chrony_logdir_path }}
 
@@ -92,30 +92,30 @@ logchange {{ chrony_logchange }}
 {% endif %}
 
 # Real-Time Clock (RTC) Configuration
-{% if chrony_rtc_settings.rtcsync_enable | default(true) %}
+{% if chrony_rtc_settings.rtcsync_enable | default(true) | bool %}
 # Enable kernel synchronization of the RTC
 rtcsync
-{% endif %}{% if chrony_rtc_settings.rtconutc_enable | default(true) %}
+{% endif %}{% if chrony_rtc_settings.rtconutc_enable | default(true) | bool %}
 # Assume RTC is set to UTC
 rtconutc
 {% endif %}{% if chrony_rtc_settings.rtcdevice | default('') | length > 0 %}
 # Custom RTC device path
 rtcdevice {{ chrony_rtc_settings.rtcdevice }}
-{% endif %}{% if chrony_rtc_settings.rtcfile_enable | default(false) %}
+{% endif %}{% if chrony_rtc_settings.rtcfile_enable | default(false) | bool %}
 # RTC tracking file for drift compensation between reboots
 rtcfile {{ chrony_rtc_settings.rtcfile_path | default('/var/lib/chrony/rtc') }}
-{% if chrony_rtc_settings.rtcautotrim_enable | default(false) %}
+{% if chrony_rtc_settings.rtcautotrim_enable | default(false) | bool %}
 # Automatic RTC trimming
 rtcautotrim {{ chrony_rtc_settings.rtcautotrim_interval | default(30) }}
 {% endif %}{% endif %}
-{% if chrony_hardware_settings.enable_hw_timestamp | default(false) or chrony_hardware_settings.refclock_enable | default(false) %}
+{% if chrony_hardware_settings.enable_hw_timestamp | default(false) | bool or chrony_hardware_settings.refclock_enable | default(false) | bool %}
 
 # Hardware Timestamping & Reference Clock
-{% if chrony_hardware_settings.enable_hw_timestamp | default(false) %}
+{% if chrony_hardware_settings.enable_hw_timestamp | default(false) | bool %}
 # Enable hardware timestamping on selected interfaces
 hwtimestamp {{ chrony_hardware_settings.hw_timestamp_interfaces | default('*') }}
 {% endif %}
-{% if chrony_hardware_settings.refclock_enable | default(false) %}
+{% if chrony_hardware_settings.refclock_enable | default(false) | bool %}
 # Reference clock configuration (e.g. PPS device)
 refclock PPS {{ chrony_hardware_settings.refclock_pps }} refid PPS precision {{ chrony_hardware_settings.refclock_precision }}
 {% endif %}{% endif %}
@@ -123,22 +123,22 @@ refclock PPS {{ chrony_hardware_settings.refclock_pps }} refid PPS precision {{ 
 # System Performance
 # Directory for storing clock state dumps
 dumpdir {{ chrony_system_settings.dumpdir }}
-{% if chrony_temp_compensation.enable %}
+{% if chrony_temp_compensation.enable | bool %}
 
 # Temperature compensation
 tempcomp {{ chrony_temp_compensation.sensor_file }} {{ chrony_temp_compensation.update_interval }} {{ chrony_temp_compensation.config_file }}
 {% endif %}
 
 # NTP Client Options
-{% if chrony_client_settings.use_dhcp %}
+{% if chrony_client_settings.use_dhcp | bool %}
 # Acquire servers from DHCP
 sourcedir {{ chrony_client_settings.dhcp_sourcedir }}
 
 {% endif %}
 # Include configurations from external sources
 confdir {{ chrony_client_settings.conf_dir | default(__chrony_confdir_path) }}
-{% if chrony_client_settings.initstepslew.enable %}
+{% if chrony_client_settings.initstepslew.enable | bool %}
 
 # Enable rapid synchronization at startup
-initstepslew {{ chrony_client_settings.initstepslew.threshold }} {{ chrony_ntp_servers[0] if chrony_ntp_servers else "" }}
+initstepslew {{ chrony_client_settings.initstepslew.threshold }} {{ chrony_ntp_servers | map('regex_replace', ' .*', '') | join(' ') }}
 {% endif %}

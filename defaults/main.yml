@@ -32,7 +32,8 @@
 # -----------------------------------------------------------------------------
 # Role execution control and basic service configuration
 
-# Action to perform: 'all' to install and configure, 'check' to verify
+# Role action to execute.
+# Valid values: 'all' (prerequisites -> install -> configure), 'prerequisites', 'install', 'configure', 'logrotate', 'upgrade'
 chrony_role_action: "all"
 
 # Ensure the chrony service is enabled and running
@@ -47,7 +48,8 @@ chrony_port_disabled: false
 # Enable binding command interface to specific addresses
 chrony_bind_cmd_address_enable: true
 
-# List of IP addresses to bind the command interface to
+# List of IP addresses to bind the command interface to.
+# Only takes effect when chrony_bind_cmd_address_enable is set to true.
 chrony_bind_cmd_addresses:
   - "127.0.0.1"
   - "::1"
@@ -60,7 +62,8 @@ chrony_run_test: false
 # -----------------------------------------------------------------------------
 # Configure NTP servers and peers
 
-# NTP source mode (server, peer, pool)
+# NTP source mode — how upstream sources are declared in chrony.conf
+# Valid values: 'pool' (DNS pool resolution) or 'server' (explicit addresses)
 chrony_ntp_source_mode: "server"
 
 # List of NTP servers to synchronize with
@@ -82,7 +85,8 @@ chrony_num_minsources: 1
 # Maximum allowed skew of the system clock updates
 chrony_maxupdateskew: 100.0
 
-# Stepping behavior to correct clock skew immediately
+# Stepping behavior to correct clock skew immediately.
+# Format: '<threshold> <limit>' (e.g. '1.0 3'). Negative limit (e.g. '1.0 -1') steps on every measurement.
 chrony_makestep: "1.0 3"
 
 # NOTE: driftfile and keyfile paths are set per-OS in vars/{os_family}.yml
@@ -96,7 +100,8 @@ chrony_makestep: "1.0 3"
 # Key ID to authenticate command queries
 chrony_command_key_id: 1
 
-# Default access control policy for NTP clients
+# Default access control policy for NTP clients.
+# Valid values: 'deny' or 'allow'. Emits '<value> all' in chrony.conf. Client rules in chrony_ntp_clients override it.
 chrony_default_access: "deny"
 
 # Enable local stratum if system is not synchronized
@@ -105,10 +110,8 @@ chrony_local_stratum_enable: false
 # Stratum level to report when operating locally unsynchronized
 chrony_local_stratum: 10
 
-# List of NTP clients allowed to synchronize with this host.
-# Always use RFC-reserved documentation subnets for examples:
-# - allow 192.0.2.0/24
-# - allow 198.51.100.0/24
+# List of NTP clients allowed or denied access to this host.
+# Format: 'allow <network>' or 'deny <network>' (e.g., 'allow 192.0.2.0/24'). Empty list means deny-by-default.
 chrony_ntp_clients: []
 
 # Client authentication settings
@@ -121,6 +124,7 @@ chrony_auth_settings:
 # -----------------------------------------------------------------------------
 # Configure timezone and slew rate for leap second corrections
 
+# Timezone for leap seconds database. Setting to an empty string disables leap seconds timezone handling.
 chrony_leapsectz: "right/UTC"
 chrony_leapsec_settings:
   mode: "slew"
@@ -138,7 +142,8 @@ chrony_log_enable: true
 # Path to the directory where chrony logs are stored
 chrony_logdir_path: "/var/log/chrony"
 
-# Log files to write (measurements, statistics, tracking)
+# Space-separated list of log tokens to record.
+# Accepted tokens: 'measurements', 'statistics', 'tracking', 'rtc', 'refclocks', 'tempcomp'
 chrony_log_options: "measurements statistics tracking"
 
 # Threshold for logging clock updates (seconds)

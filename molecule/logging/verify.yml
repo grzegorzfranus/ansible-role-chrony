@@ -1,0 +1,55 @@
+---
+- name: molecule | Verify Logging & Logrotate Scenario
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Verify | Check custom log directory exists
+      ansible.builtin.stat:
+        path: "/var/log/chrony-test"
+      register: __verify_custom_logdir
+
+    - name: Verify | Assert custom log directory exists
+      ansible.builtin.assert:
+        that:
+          - __verify_custom_logdir.stat.exists
+          - __verify_custom_logdir.stat.isdir
+
+    - name: Verify | Check logrotate archive directory exists
+      ansible.builtin.stat:
+        path: "/var/log/chrony-test/archive"
+      register: __verify_archivedir
+
+    - name: Verify | Assert logrotate archive directory exists
+      ansible.builtin.assert:
+        that:
+          - __verify_archivedir.stat.exists
+          - __verify_archivedir.stat.isdir
+
+    - name: Verify | Check logrotate configuration file exists
+      ansible.builtin.stat:
+        path: "/etc/logrotate.d/chrony"
+      register: __verify_logrotate_file
+
+    - name: Verify | Assert logrotate config file exists
+      ansible.builtin.assert:
+        that:
+          - __verify_logrotate_file.stat.exists
+
+    - name: Verify | Assert logrotate config ownership and mode
+      ansible.builtin.assert:
+        that:
+          - __verify_logrotate_file.stat.pw_name == 'root'
+          - __verify_logrotate_file.stat.gr_name == 'root'
+          - __verify_logrotate_file.stat.mode == '0644'
+
+    - name: Verify | Validate logrotate dry-run execution
+      ansible.builtin.command:
+        cmd: "logrotate -d /etc/logrotate.d/chrony"
+      register: __verify_logrotate_dryrun
+      changed_when: false
+
+    - name: Verify | Assert logrotate dry-run succeeded
+      ansible.builtin.assert:
+        that:
+          - __verify_logrotate_dryrun.rc == 0

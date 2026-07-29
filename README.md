@@ -17,7 +17,7 @@ This Ansible role installs and configures Chrony, a versatile implementation of 
 - 🌐 **Flexible Topology**: Support for both client, server, and hybrid configurations
 - 🔄 **Automatic Updates**: Package upgrade capabilities with service management
 - 📝 **Configuration Backup**: Safe configuration deployment with rollback capability
-- 🧪 **Container Testing**: Full Molecule test suite for CI/CD integration
+- 🧪 **Container Testing**: Molecule scenarios (`default`, `logging`) validated across 7 distributions in CI
 
 ## 🎯 Architecture
 
@@ -149,6 +149,14 @@ Customize for specific requirements:
 
 ## 📊 Variables
 
+> [!IMPORTANT]
+> Dictionary variables (`chrony_auth_settings`, `chrony_leapsec_settings`,
+> `chrony_logrotate_options`, `chrony_rtc_settings`, `chrony_hardware_settings`,
+> `chrony_system_settings`, `chrony_temp_compensation`, `chrony_client_settings`)
+> are **replaced wholesale**, not merged. When overriding one, supply **all**
+> of its keys — omitting a key causes validation to fail with
+> `Invalid chrony_<name>`. See `defaults/main.yml` for the complete set.
+
 ### General Options
 
 | Variable | Description | Default |
@@ -171,7 +179,7 @@ Customize for specific requirements:
 | `chrony_ntsdumpdir` | Directory for storing NTS cookies and keys | `"/var/lib/chrony"` |
 | `chrony_num_minsources` | Minimum number of sources required for synchronization | `1` |
 | `chrony_maxupdateskew` | Maximum allowed skew for updates (in ppm) | `100.0` |
-| `chrony_makestep` | Step clock if offset is larger than threshold (format: `"<threshold> <limit>"`) | `"1.0 3"` |
+| `chrony_makestep` | Step clock if offset is larger than threshold (format: `"<threshold> <limit>"`, e.g. `'1.0 3'`, negative limit `'1.0 -1'` steps on every measurement) | `"1.0 3"` |
 
 ### Security Settings
 
@@ -222,6 +230,7 @@ Customize for specific requirements:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `chrony_system_settings` | System performance dictionary (`dumpdir`) | *See defaults/main.yml* |
 | `chrony_system_settings.dumpdir` | Directory for storing clock state dumps | `"/var/lib/chrony"` |
 
 ### Temperature Compensation
@@ -315,19 +324,14 @@ chrony_auth_settings:
 
 ### Uninstall
 
-To remove Chrony and its configuration from a host:
+Automated removal is not currently in scope for this role. To remove Chrony
+manually, stop the service and remove the package using your distribution's
+package manager:
 
-```yaml
----
-- name: Uninstall Chrony
-  hosts: all
-  become: true
-  roles:
-    - role: grzegorzfranus.chrony
-      vars:
-        chrony_role_action: "uninstall"
+```bash
+sudo systemctl disable --now chronyd   # 'chrony' on Debian/Ubuntu
+sudo apt remove chrony                 # or: sudo dnf remove chrony
 ```
-*Note: Service removal is typically done by running standard package uninstall commands or overriding variables to remove.*
 
 ### Roll-back Capabilities
 

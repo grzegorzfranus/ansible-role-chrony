@@ -11,7 +11,7 @@
     name: "{{ __chrony_service_name }}"
     enabled: true
   when: >
-    chrony_service_enabled | default(false)
+    chrony_service_enabled | default(false) | bool
 
 - name: Chrony | configure | Disable Chrony service on system startup
   become: true
@@ -19,7 +19,7 @@
     name: "{{ __chrony_service_name }}"
     enabled: false
   when: >
-    not chrony_service_enabled | default(false)
+    not (chrony_service_enabled | default(false) | bool)
 
 - name: Chrony | configure | Ensure confdir directory exists
   become: true
@@ -45,7 +45,9 @@
     owner: root
     group: root
     backup: true
-  # chrony does not provide a built-in config validation command (like nginx -t)
+  # Note: chronyd drops root privileges to unprivileged user (_chrony/chrony)
+  # during config parsing, which causes Permission denied when reading Ansible's
+  # temporary validation files in /root/.ansible/tmp/.
   notify: restart chrony
 
 - name: Chrony | configure | Ensure log directory exists
