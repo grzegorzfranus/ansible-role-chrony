@@ -44,7 +44,7 @@
     mode: "0644"
     owner: root
     group: root
-    validate: "{{ __chrony_binary_path }} -p -f %s"
+    validate: "{{ __chrony_binary_path }} -u root -p -f %s"
     backup: true
   notify: restart chrony
 
