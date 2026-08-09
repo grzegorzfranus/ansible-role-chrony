@@ -358,15 +358,11 @@ ansible-role-chrony/
 ├── molecule/                # Molecule testing framework
 │   ├── default/             # Default testing scenario (NTP client/server)
 │   │   ├── converge.yml
-│   │   ├── create.yml
-│   │   ├── destroy.yml
 │   │   ├── molecule.yml
 │   │   ├── prepare.yml
 │   │   └── verify.yml
 │   └── logging/             # Log rotation & archival testing scenario
 │       ├── converge.yml
-│       ├── create.yml
-│       ├── destroy.yml
 │       ├── molecule.yml
 │       ├── prepare.yml
 │       └── verify.yml
