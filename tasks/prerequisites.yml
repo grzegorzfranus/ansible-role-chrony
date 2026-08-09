@@ -6,6 +6,7 @@
 # =============================================================================
 
 - name: Chrony | prerequisites | Check if NTP service exists
+  become: true
   ansible.builtin.systemd:
     name: "{{ __chrony_ntp_service_name }}"
   register: __chrony_ntp_service_check
@@ -26,6 +27,7 @@
     - __chrony_ntp_service_check.status.ActiveState in ['active', 'activating']
 
 - name: Chrony | prerequisites | Check if systemd-timesyncd service exists
+  become: true
   ansible.builtin.systemd:
     name: "{{ __chrony_timesyncd_service_name }}"
   register: __chrony_timesyncd_check
