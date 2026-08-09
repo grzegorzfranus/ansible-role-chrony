@@ -6,7 +6,9 @@
 # These are NOT user-overridable. All use double-underscore prefix per Red Hat CoP — Variable Naming.
 # =============================================================================
 
-# Service names
+# -----------------------------------------------------------------------------
+# Service Names
+# -----------------------------------------------------------------------------
 
 # Systemd unit name of the Chrony daemon on EL9 / RedHat family
 __chrony_service_name: "chronyd"
@@ -17,7 +19,9 @@ __chrony_ntp_service_name: "ntpd"
 # Systemd unit name of systemd-timesyncd, stopped during prerequisites
 __chrony_timesyncd_service_name: "systemd-timesyncd"
 
-# File paths and permissions
+# -----------------------------------------------------------------------------
+# File Paths and Permissions
+# -----------------------------------------------------------------------------
 
 # Absolute path to chrony configuration file on EL9 / RedHat family
 __chrony_config_path: "/etc/chrony.conf"

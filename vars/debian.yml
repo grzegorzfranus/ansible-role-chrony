@@ -6,7 +6,9 @@
 # These are NOT user-overridable. All use double-underscore prefix per Red Hat CoP — Variable Naming.
 # =============================================================================
 
-# Service names
+# -----------------------------------------------------------------------------
+# Service Names
+# -----------------------------------------------------------------------------
 
 # Systemd unit name of the Chrony daemon on Debian/Ubuntu
 __chrony_service_name: "chrony"
@@ -17,12 +19,15 @@ __chrony_ntp_service_name: "ntp"
 # Systemd unit name of systemd-timesyncd, stopped during prerequisites
 __chrony_timesyncd_service_name: "systemd-timesyncd"
 
-# File paths and permissions
+# -----------------------------------------------------------------------------
+# File Paths and Permissions
+# -----------------------------------------------------------------------------
 
 # Absolute path to chrony configuration file on Debian/Ubuntu
 __chrony_config_path: "/etc/chrony/chrony.conf"
 
-# Service user owning the Chrony log directory on Debian/Ubuntu
+# Service user owning the Chrony log directory
+# Note: Debian/Ubuntu package uses '_chrony', unlike RedHat/EL which uses 'chrony'
 __chrony_log_directory_user: "_chrony"
 
 # Absolute path to the Chrony drift file on Debian/Ubuntu
