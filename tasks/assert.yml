@@ -12,12 +12,35 @@
 # does not run.
 # =============================================================================
 
+# -----------------------------------------------------------------------------
+# 0. Preflight & OS Support
+# -----------------------------------------------------------------------------
+
 - name: Chrony | assert | Validate supported OS family
   ansible.builtin.assert:
     that:
       - ansible_facts['os_family'] | lower in ['redhat', 'debian']
     fail_msg: "Unsupported OS family '{{ ansible_facts['os_family'] }}'. Supported: RedHat, Debian"
     success_msg: "OS family: {{ ansible_facts['os_family'] }}"
+
+- name: Chrony | assert | Validate internal OS-specific variables are loaded
+  ansible.builtin.assert:
+    that:
+      - __chrony_package_name is defined
+      - __chrony_service_name is defined
+      - __chrony_config_path is defined
+      - __chrony_log_directory_user is defined
+      - __chrony_driftfile_path is defined
+      - __chrony_keyfile_path is defined
+      - __chrony_binary_path is defined
+    fail_msg: >-
+      Internal OS-specific variables are not loaded.
+      Ensure that vars/ files are correctly structured for this OS family.
+    success_msg: "All internal OS-specific variables are loaded"
+
+# -----------------------------------------------------------------------------
+# 1. General Settings
+# -----------------------------------------------------------------------------
 
 - name: Chrony | assert | Validate boolean flags
   ansible.builtin.assert:
@@ -39,6 +62,21 @@
       Must be one of: all, prerequisites, install, configure, logrotate, upgrade
     success_msg: "Role action is valid: {{ chrony_role_action }}"
 
+- name: Chrony | assert | Validate bindcmdaddress list
+  ansible.builtin.assert:
+    that:
+      - chrony_bind_cmd_addresses is iterable
+      - chrony_bind_cmd_addresses | length > 0
+    fail_msg: >-
+      Invalid command bind addresses '{{ chrony_bind_cmd_addresses }}'.
+      Must be a non-empty list of IP addresses
+    success_msg: "Command bind addresses list is valid"
+  when: chrony_bind_cmd_address_enable | default(false) | bool
+
+# -----------------------------------------------------------------------------
+# 2. NTP Source Configuration
+# -----------------------------------------------------------------------------
+
 - name: Chrony | assert | Validate NTP source mode choices
   ansible.builtin.assert:
     that:
@@ -48,43 +86,12 @@
       Must be one of: pool, server
     success_msg: "NTP source mode is valid: {{ chrony_ntp_source_mode }}"
 
-- name: Chrony | assert | Validate default access policy choices
-  ansible.builtin.assert:
-    that:
-      - chrony_default_access in ['deny', 'allow']
-    fail_msg: >-
-      Invalid default access policy '{{ chrony_default_access }}'.
-      Must be one of: deny, allow
-    success_msg: "Default access policy is valid: {{ chrony_default_access }}"
-
-- name: Chrony | assert | Validate step threshold format
-  ansible.builtin.assert:
-    that:
-      - chrony_makestep is search('^[0-9]+(\.[0-9]+)? -?[0-9]+$')
-    fail_msg: >-
-      Invalid step threshold '{{ chrony_makestep }}'.
-      Must be '<threshold> <limit>' (e.g., '1.0 3').
-      A negative limit (e.g., '1.0 -1') steps the clock on every measurement.
-    success_msg: "Step threshold format is valid: {{ chrony_makestep }}"
-
 - name: Chrony | assert | Validate NTP server list is not empty
   ansible.builtin.assert:
     that:
       - chrony_ntp_servers | length > 0
     fail_msg: "NTP server list is empty. Must provide at least one NTP server"
     success_msg: "NTP server list has {{ chrony_ntp_servers | length }} servers"
-
-- name: Chrony | assert | Validate NTP client access rule format
-  ansible.builtin.assert:
-    that:
-      - item is regex('^(allow|deny)\s+')
-    fail_msg: >-
-      Invalid NTP client rule '{{ item }}'.
-      Must be in format 'allow|deny <network>' (e.g., 'allow 192.0.2.0/24', 'deny 192.0.2.100').
-      See: https://chrony-project.org/doc/3.4/chrony.conf.html
-    success_msg: "NTP client rule '{{ item }}' is valid"
-  loop: "{{ chrony_ntp_clients }}"
-  when: chrony_ntp_clients | length > 0
 
 - name: Chrony | assert | Validate maximum distance range
   ansible.builtin.assert:
@@ -95,6 +102,16 @@
       Invalid max distance '{{ chrony_maxdistance }}'.
       Must be between 0 and 16.0 seconds
     success_msg: "Maximum distance is valid: {{ chrony_maxdistance }} seconds"
+
+- name: Chrony | assert | Validate NTS dump directory is absolute path
+  ansible.builtin.assert:
+    that:
+      - chrony_ntsdumpdir | length > 0
+      - chrony_ntsdumpdir is search('^/')
+    fail_msg: >-
+      Invalid NTS dump directory '{{ chrony_ntsdumpdir }}'.
+      Must be a non-empty absolute path
+    success_msg: "NTS dump directory is valid: {{ chrony_ntsdumpdir }}"
 
 - name: Chrony | assert | Validate minimum sources range
   ansible.builtin.assert:
@@ -116,62 +133,35 @@
       Must be between 0 and 1000.0 ppm
     success_msg: "Maximum update skew is valid: {{ chrony_maxupdateskew }} ppm"
 
-- name: Chrony | assert | Validate logrotate count range
+- name: Chrony | assert | Validate step threshold format
   ansible.builtin.assert:
     that:
-      - chrony_logrotate_options.count > 0
+      - chrony_makestep is search('^[0-9]+(\.[0-9]+)? -?[0-9]+$')
     fail_msg: >-
-      Invalid logrotate count '{{ chrony_logrotate_options.count }}'.
-      Must be greater than 0
-    success_msg: "Logrotate count is valid: {{ chrony_logrotate_options.count }}"
-  when: >
-    chrony_configure_logrotate | default(false) | bool
+      Invalid step threshold '{{ chrony_makestep }}'.
+      Must be '<threshold> <limit>' (e.g., '1.0 3').
+      A negative limit (e.g., '1.0 -1') steps the clock on every measurement.
+    success_msg: "Step threshold format is valid: {{ chrony_makestep }}"
 
-- name: Chrony | assert | Validate NTS dump directory is absolute path
+# -----------------------------------------------------------------------------
+# 3. Security Settings
+# -----------------------------------------------------------------------------
+
+- name: Chrony | assert | Validate command key ID
   ansible.builtin.assert:
     that:
-      - chrony_ntsdumpdir | length > 0
-      - chrony_ntsdumpdir is search('^/')
+      - (chrony_command_key_id | int) > 0
+    fail_msg: "Invalid command key ID '{{ chrony_command_key_id }}'. Must be a positive integer"
+    success_msg: "Command key ID is valid"
+
+- name: Chrony | assert | Validate default access policy choices
+  ansible.builtin.assert:
+    that:
+      - chrony_default_access in ['deny', 'allow']
     fail_msg: >-
-      Invalid NTS dump directory '{{ chrony_ntsdumpdir }}'.
-      Must be a non-empty absolute path
-    success_msg: "NTS dump directory is valid: {{ chrony_ntsdumpdir }}"
-
-# rtcfile is required for rtcautotrim per chrony documentation
-- name: Chrony | assert | Validate rtcfile path when enabled
-  ansible.builtin.assert:
-    that:
-      - chrony_rtc_settings.rtcfile_path | length > 0
-      - chrony_rtc_settings.rtcfile_path is search('^/')
-    fail_msg: >-
-      Invalid RTC file path '{{ chrony_rtc_settings.rtcfile_path }}'.
-      Must be a non-empty absolute path
-    success_msg: "RTC file path is valid: {{ chrony_rtc_settings.rtcfile_path }}"
-  when: chrony_rtc_settings.rtcfile_enable | default(false) | bool
-
-# rtcautotrim without rtcfile is silently ignored by chrony — warn the user
-- name: Chrony | assert | Warn if rtcautotrim is enabled without rtcfile
-  ansible.builtin.assert:
-    that:
-      - chrony_rtc_settings.rtcfile_enable | default(false) | bool
-    fail_msg: |
-      WARNING: rtcautotrim is enabled but rtcfile is disabled!
-      According to chrony documentation, 'rtcautotrim' is ONLY effective with 'rtcfile' directive.
-      Please set 'chrony_rtc_settings.rtcfile_enable: true' for rtcautotrim to work.
-      See: https://chrony-project.org/doc/3.4/chrony.conf.html
-    success_msg: "rtcautotrim configuration is valid (rtcfile is enabled)"
-  when: chrony_rtc_settings.rtcautotrim_enable | default(false) | bool
-
-- name: Chrony | assert | Validate rtcautotrim interval range
-  ansible.builtin.assert:
-    that:
-      - chrony_rtc_settings.rtcautotrim_interval > 0
-      - chrony_rtc_settings.rtcautotrim_interval <= 86400
-    fail_msg: >-
-      Invalid rtcautotrim interval '{{ chrony_rtc_settings.rtcautotrim_interval }}'.
-      Must be between 1 and 86400 seconds
-    success_msg: "rtcautotrim interval is valid: {{ chrony_rtc_settings.rtcautotrim_interval }} seconds"
-  when: chrony_rtc_settings.rtcautotrim_enable | default(false) | bool
+      Invalid default access policy '{{ chrony_default_access }}'.
+      Must be one of: deny, allow
+    success_msg: "Default access policy is valid: {{ chrony_default_access }}"
 
 - name: Chrony | assert | Validate local stratum level
   ansible.builtin.assert:
@@ -185,38 +175,54 @@
     success_msg: "Local stratum is valid: {{ chrony_local_stratum }}"
   when: chrony_local_stratum_enable | default(false) | bool
 
-- name: Chrony | assert | Validate bindcmdaddress list
+- name: Chrony | assert | Validate NTP client access rule format
   ansible.builtin.assert:
     that:
-      - chrony_bind_cmd_addresses is iterable
-      - chrony_bind_cmd_addresses | length > 0
+      - item is regex('^(allow|deny)\s+')
     fail_msg: >-
-      Invalid command bind addresses '{{ chrony_bind_cmd_addresses }}'.
-      Must be a non-empty list of IP addresses
-    success_msg: "Command bind addresses list is valid"
-  when: chrony_bind_cmd_address_enable | default(false) | bool
+      Invalid NTP client rule '{{ item }}'.
+      Must be in format 'allow|deny <network>' (e.g., 'allow 192.0.2.0/24', 'deny 192.0.2.100').
+      See: https://chrony-project.org/doc/3.4/chrony.conf.html
+    success_msg: "NTP client rule '{{ item }}' is valid"
+  loop: "{{ chrony_ntp_clients }}"
+  when: chrony_ntp_clients | length > 0
 
-- name: Chrony | assert | Validate internal OS-specific variables are loaded
+- name: Chrony | assert | Validate auth settings
   ansible.builtin.assert:
     that:
-      - __chrony_package_name is defined
-      - __chrony_service_name is defined
-      - __chrony_config_path is defined
-      - __chrony_log_directory_user is defined
-      - __chrony_driftfile_path is defined
-      - __chrony_keyfile_path is defined
-      - __chrony_binary_path is defined
+      - chrony_auth_settings.enable is boolean
+      - chrony_auth_settings.selectmode in ['require', 'prefer', 'ignore']
+    fail_msg: "Invalid chrony_auth_settings"
+    success_msg: "Auth settings are valid"
+
+# -----------------------------------------------------------------------------
+# 4. Leap Seconds Configuration
+# -----------------------------------------------------------------------------
+
+- name: Chrony | assert | Validate leap seconds timezone
+  ansible.builtin.assert:
+    that:
+      - chrony_leapsectz is string
+      - chrony_leapsectz is regex('^[a-zA-Z0-9_/\-]+$')
     fail_msg: >-
-      Internal OS-specific variables are not loaded.
-      Ensure that vars/ files are correctly structured for this OS family.
-    success_msg: "All internal OS-specific variables are loaded"
+      Invalid leap seconds timezone '{{ chrony_leapsectz }}'.
+      Must be a valid timezone identifier (e.g., 'right/UTC', 'UTC').
+      Set to an empty string to disable leapsectz.
+    success_msg: "Leap seconds timezone is valid: {{ chrony_leapsectz }}"
+  when: chrony_leapsectz | default('') | length > 0
 
-- name: Chrony | assert | Validate command key ID
+- name: Chrony | assert | Validate leapsec settings
   ansible.builtin.assert:
     that:
-      - (chrony_command_key_id | int) > 0
-    fail_msg: "Invalid command key ID '{{ chrony_command_key_id }}'. Must be a positive integer"
-    success_msg: "Command key ID is valid"
+      - chrony_leapsec_settings.mode is string
+      - (chrony_leapsec_settings.maxslewrate | float) > 0
+      - chrony_leapsec_settings.smoothtime is string
+    fail_msg: "Invalid chrony_leapsec_settings"
+    success_msg: "Leapsec settings are valid"
+
+# -----------------------------------------------------------------------------
+# 5. Logging Configuration
+# -----------------------------------------------------------------------------
 
 - name: Chrony | assert | Validate log directory is absolute path
   ansible.builtin.assert:
@@ -250,17 +256,20 @@
     success_msg: "Log change threshold is valid: {{ chrony_logchange }} seconds"
   when: chrony_log_enable | default(false) | bool
 
-- name: Chrony | assert | Validate leap seconds timezone
+# -----------------------------------------------------------------------------
+# 6. Logrotate Configuration
+# -----------------------------------------------------------------------------
+
+- name: Chrony | assert | Validate logrotate count range
   ansible.builtin.assert:
     that:
-      - chrony_leapsectz is string
-      - chrony_leapsectz is regex('^[a-zA-Z0-9_/\-]+$')
+      - chrony_logrotate_options.count > 0
     fail_msg: >-
-      Invalid leap seconds timezone '{{ chrony_leapsectz }}'.
-      Must be a valid timezone identifier (e.g., 'right/UTC', 'UTC').
-      Set to an empty string to disable leapsectz.
-    success_msg: "Leap seconds timezone is valid: {{ chrony_leapsectz }}"
-  when: chrony_leapsectz | default('') | length > 0
+      Invalid logrotate count '{{ chrony_logrotate_options.count }}'.
+      Must be greater than 0
+    success_msg: "Logrotate count is valid: {{ chrony_logrotate_options.count }}"
+  when: >
+    chrony_configure_logrotate | default(false) | bool
 
 - name: Chrony | assert | Validate logrotate archive directory is absolute path
   ansible.builtin.assert:
@@ -269,30 +278,6 @@
     fail_msg: "Invalid logrotate archive directory '{{ chrony_logrotate_options.archive_directory_path }}'. Must be an absolute path"
     success_msg: "Logrotate archive directory is valid: {{ chrony_logrotate_options.archive_directory_path }}"
   when: chrony_configure_logrotate | default(false) | bool
-
-- name: Chrony | assert | Validate client configuration directory is absolute path
-  ansible.builtin.assert:
-    that:
-      - chrony_client_settings.conf_dir is match('^/.+')
-    fail_msg: "Invalid client configuration directory '{{ chrony_client_settings.conf_dir }}'. Must be an absolute path"
-    success_msg: "Client configuration directory is valid: {{ chrony_client_settings.conf_dir }}"
-
-- name: Chrony | assert | Validate auth settings
-  ansible.builtin.assert:
-    that:
-      - chrony_auth_settings.enable is boolean
-      - chrony_auth_settings.selectmode in ['require', 'prefer', 'ignore']
-    fail_msg: "Invalid chrony_auth_settings"
-    success_msg: "Auth settings are valid"
-
-- name: Chrony | assert | Validate leapsec settings
-  ansible.builtin.assert:
-    that:
-      - chrony_leapsec_settings.mode is string
-      - (chrony_leapsec_settings.maxslewrate | float) > 0
-      - chrony_leapsec_settings.smoothtime is string
-    fail_msg: "Invalid chrony_leapsec_settings"
-    success_msg: "Leapsec settings are valid"
 
 - name: Chrony | assert | Validate remaining logrotate options
   ansible.builtin.assert:
@@ -307,6 +292,45 @@
     success_msg: "Remaining logrotate options are valid"
   when: chrony_configure_logrotate | default(false) | bool
 
+# -----------------------------------------------------------------------------
+# 7. Real Time Clock (RTC) Settings
+# -----------------------------------------------------------------------------
+
+- name: Chrony | assert | Validate rtcfile path when enabled
+  ansible.builtin.assert:
+    that:
+      - chrony_rtc_settings.rtcfile_path | length > 0
+      - chrony_rtc_settings.rtcfile_path is search('^/')
+    fail_msg: >-
+      Invalid RTC file path '{{ chrony_rtc_settings.rtcfile_path }}'.
+      Must be a non-empty absolute path
+    success_msg: "RTC file path is valid: {{ chrony_rtc_settings.rtcfile_path }}"
+  when: chrony_rtc_settings.rtcfile_enable | default(false) | bool
+
+# rtcfile is required for rtcautotrim per chrony documentation
+- name: Chrony | assert | Warn if rtcautotrim is enabled without rtcfile
+  ansible.builtin.assert:
+    that:
+      - chrony_rtc_settings.rtcfile_enable | default(false) | bool
+    fail_msg: |
+      WARNING: rtcautotrim is enabled but rtcfile is disabled!
+      According to chrony documentation, 'rtcautotrim' is ONLY effective with 'rtcfile' directive.
+      Please set 'chrony_rtc_settings.rtcfile_enable: true' for rtcautotrim to work.
+      See: https://chrony-project.org/doc/3.4/chrony.conf.html
+    success_msg: "rtcautotrim configuration is valid (rtcfile is enabled)"
+  when: chrony_rtc_settings.rtcautotrim_enable | default(false) | bool
+
+- name: Chrony | assert | Validate rtcautotrim interval range
+  ansible.builtin.assert:
+    that:
+      - chrony_rtc_settings.rtcautotrim_interval > 0
+      - chrony_rtc_settings.rtcautotrim_interval <= 86400
+    fail_msg: >-
+      Invalid rtcautotrim interval '{{ chrony_rtc_settings.rtcautotrim_interval }}'.
+      Must be between 1 and 86400 seconds
+    success_msg: "rtcautotrim interval is valid: {{ chrony_rtc_settings.rtcautotrim_interval }} seconds"
+  when: chrony_rtc_settings.rtcautotrim_enable | default(false) | bool
+
 - name: Chrony | assert | Validate remaining rtc settings
   ansible.builtin.assert:
     that:
@@ -316,6 +340,10 @@
       - chrony_rtc_settings.rtcautotrim_enable is boolean
     fail_msg: "Invalid chrony_rtc_settings"
     success_msg: "Remaining rtc settings are valid"
+
+# -----------------------------------------------------------------------------
+# 8. Hardware Timestamping Settings
+# -----------------------------------------------------------------------------
 
 - name: Chrony | assert | Validate hardware settings
   ansible.builtin.assert:
@@ -334,6 +362,10 @@
     fail_msg: "chrony_hardware_settings.refclock_pps must be an absolute path"
     success_msg: "Hardware refclock path is valid"
   when: chrony_hardware_settings.refclock_enable | default(false) | bool
+
+# -----------------------------------------------------------------------------
+# 9. System Performance Settings
+# -----------------------------------------------------------------------------
 
 - name: Chrony | assert | Validate system settings
   ansible.builtin.assert:
@@ -358,6 +390,17 @@
     fail_msg: "Invalid temperature compensation configuration"
     success_msg: "Temperature compensation paths are valid"
   when: chrony_temp_compensation.enable | default(false) | bool
+
+# -----------------------------------------------------------------------------
+# 10. NTP Client Options
+# -----------------------------------------------------------------------------
+
+- name: Chrony | assert | Validate client configuration directory is absolute path
+  ansible.builtin.assert:
+    that:
+      - chrony_client_settings.conf_dir is match('^/.+')
+    fail_msg: "Invalid client configuration directory '{{ chrony_client_settings.conf_dir }}'. Must be an absolute path"
+    success_msg: "Client configuration directory is valid: {{ chrony_client_settings.conf_dir }}"
 
 - name: Chrony | assert | Validate remaining client settings
   ansible.builtin.assert:
