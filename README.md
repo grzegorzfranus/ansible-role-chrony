@@ -129,7 +129,7 @@ chrony_maxdistance: 3.0
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `chrony_role_action` | Define which parts of the role to execute (Options: `all`, `prerequisites`, `install`, `configure`, `logrotate`, `upgrade`) | `"all"` |
-| `chrony_service_enabled` | Whether to enable Chrony service on boot | `true` |
+| `chrony_service_enabled` | Enable the chrony service on boot and keep it running (false stops and disables it) | `true` |
 | `chrony_configure_logrotate` | Enable/disable logrotate configuration for Chrony logs | `false` |
 | `chrony_port_disabled` | Disable NTP listening port (UDP 123) for client-only nodes | `false` |
 | `chrony_bind_cmd_address_enable` | Restrict command socket binding to specific loopback addresses | `true` |

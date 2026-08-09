@@ -36,7 +36,7 @@
 # Valid values: all, prerequisites, install, configure, logrotate, upgrade
 chrony_role_action: "all"
 
-# Ensure the chrony service is enabled on system startup
+# Enable the chrony service on boot and keep it running (false stops and disables it)
 # Valid values: true, false
 chrony_service_enabled: true
 
