@@ -3,19 +3,36 @@
 # Ansible Role: Chrony - Debian Variables
 # =============================================================================
 # Debian-specific variables.
-# These are NOT user-overridable. All use double-underscore prefix per CoP §3.1.4.
+# These are NOT user-overridable. All use double-underscore prefix per Red Hat CoP — Variable Naming.
 # =============================================================================
 
 # Service names
+
+# Systemd unit name of the Chrony daemon on Debian/Ubuntu
 __chrony_service_name: "chrony"
+
+# Systemd unit name of the legacy NTP daemon, stopped during prerequisites
 __chrony_ntp_service_name: "ntp"
+
+# Systemd unit name of systemd-timesyncd, stopped during prerequisites
 __chrony_timesyncd_service_name: "systemd-timesyncd"
 
 # File paths and permissions
+
+# Absolute path to chrony configuration file on Debian/Ubuntu
 __chrony_config_path: "/etc/chrony/chrony.conf"
-# Debian uses '_chrony' instead of 'chrony' for the service user
+
+# Service user owning the Chrony log directory on Debian/Ubuntu
 __chrony_log_directory_user: "_chrony"
+
+# Absolute path to the Chrony drift file on Debian/Ubuntu
 __chrony_driftfile_path: "/var/lib/chrony/chrony.drift"
+
+# Absolute path to the Chrony authentication keys file on Debian/Ubuntu
 __chrony_keyfile_path: "/etc/chrony/chrony.keys"
+
+# Absolute path to the chronyd binary executable on Debian/Ubuntu
 __chrony_binary_path: "/usr/sbin/chronyd"
+
+# Absolute path to the Chrony configuration include directory on Debian/Ubuntu
 __chrony_confdir_path: "/etc/chrony/conf.d"
