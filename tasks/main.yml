@@ -26,57 +26,59 @@
     - chrony_init
 
 - name: Chrony | assert | Validate role variables and requirements
-  ansible.builtin.include_tasks: assert.yml
+  ansible.builtin.include_tasks:
+    file: assert.yml
+  args:
+    apply:
+      tags:
+        - always
+        - chrony_validate
   run_once: true
   tags:
     - always
     - chrony_validate
 
 - name: Chrony | prerequisites | Verify system prerequisites
-  ansible.builtin.include_tasks: prerequisites.yml
-  when: >
-    chrony_role_action in ['all', 'prerequisites']
+  ansible.builtin.import_tasks: prerequisites.yml
+  when: chrony_role_action in ['all', 'prerequisites']
   tags:
     - chrony_setup
     - chrony_requirements
 
 - name: Chrony | install | Install Chrony package
-  ansible.builtin.include_tasks: install.yml
-  when: >
-    chrony_role_action in ['all', 'install']
+  ansible.builtin.import_tasks: install.yml
+  when: chrony_role_action in ['all', 'install']
   tags:
     - chrony_setup
     - chrony_install
 
 - name: Chrony | configure | Configure Chrony service
-  ansible.builtin.include_tasks: configure.yml
-  when: >
-    chrony_role_action in ['all', 'configure']
+  ansible.builtin.import_tasks: configure.yml
+  when: chrony_role_action in ['all', 'configure']
   tags:
     - chrony_setup
     - chrony_configure
 
 - name: Chrony | logrotate | Configure logrotate for Chrony service
-  ansible.builtin.include_tasks: logrotate.yml
-  when: >
-    chrony_role_action in ['all', 'configure', 'logrotate'] and
-    chrony_configure_logrotate | default(false) | bool
+  ansible.builtin.import_tasks: logrotate.yml
+  when:
+    - chrony_role_action in ['all', 'configure', 'logrotate']
+    - chrony_configure_logrotate | default(false) | bool
   tags:
     - chrony_config
     - chrony_logrotate
 
 - name: Chrony | upgrade | Upgrade Chrony package
-  ansible.builtin.include_tasks: upgrade.yml
-  when: >
-    chrony_role_action in ['upgrade']
+  ansible.builtin.import_tasks: upgrade.yml
+  when: chrony_role_action in ['upgrade']
   tags:
     - chrony_upgrade
 
 - name: Chrony | test | Verify time synchronization
-  ansible.builtin.include_tasks: test.yml
-  when: >
-    chrony_role_action in ['all', 'configure', 'logrotate', 'upgrade' ] and
-    chrony_run_test | default(false) | bool
+  ansible.builtin.import_tasks: test.yml
+  when:
+    - chrony_role_action in ['all', 'configure', 'logrotate', 'upgrade']
+    - chrony_run_test | default(false) | bool
   tags:
     - chrony_test
     - chrony_verify

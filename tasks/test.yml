@@ -21,21 +21,28 @@
     - __chrony_makestep_result.rc != 0
     - "'not synchronised' not in __chrony_makestep_result.stdout.lower()"
     - "'no suitable source' not in __chrony_makestep_result.stdout.lower()"
+  when: not ansible_check_mode
 
 # Justification: Use command module as there is no native Ansible module to wait for Chrony time synchronization.
 - name: Chrony | test | Ensure system is NTP time synced
+  become: true
   ansible.builtin.command: chronyc waitsync 30
   changed_when: false
+  when: not ansible_check_mode
 
 # Justification: Use command module as there is no native Ansible module to retrieve Chrony clock tracking details.
 - name: Chrony | test | Check if time is synchronized with server
+  become: true
   ansible.builtin.command: chronyc tracking
   changed_when: false
   failed_when: __chrony_tracking_result.rc != 0
   register: __chrony_tracking_result
+  when: not ansible_check_mode
 
 - name: Chrony | test | Show tracking details
   ansible.builtin.debug:
-    msg: >
-      Tracking Output:
-      {{ __chrony_tracking_result.stdout_lines | join('\n') }}
+    msg: "{{ __chrony_tracking_result.stdout_lines }}"
+    verbosity: 1
+  when:
+    - not ansible_check_mode
+    - __chrony_tracking_result.stdout_lines is defined

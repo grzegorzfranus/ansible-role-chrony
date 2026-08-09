@@ -10,6 +10,7 @@
     name: "{{ __chrony_ntp_service_name }}"
   register: __chrony_ntp_service_check
   failed_when: false
+  changed_when: false
   check_mode: true
 
 - name: Chrony | prerequisites | Stop and disable NTP service if running
@@ -19,16 +20,17 @@
     state: stopped
     enabled: false
     daemon_reload: true
-  when: >
-    not ansible_check_mode and
-    __chrony_ntp_service_check.status is defined and
-    __chrony_ntp_service_check.status.ActiveState in ['active', 'activating']
+  when:
+    - not ansible_check_mode
+    - __chrony_ntp_service_check.status is defined
+    - __chrony_ntp_service_check.status.ActiveState in ['active', 'activating']
 
 - name: Chrony | prerequisites | Check if systemd-timesyncd service exists
   ansible.builtin.systemd:
     name: "{{ __chrony_timesyncd_service_name }}"
   register: __chrony_timesyncd_check
   failed_when: false
+  changed_when: false
   check_mode: true
 
 - name: Chrony | prerequisites | Stop and disable systemd-timesyncd service if running
@@ -38,7 +40,7 @@
     state: stopped
     enabled: false
     daemon_reload: true
-  when: >
-    not ansible_check_mode and
-    __chrony_timesyncd_check.status is defined and
-    __chrony_timesyncd_check.status.ActiveState in ['active', 'activating']
+  when:
+    - not ansible_check_mode
+    - __chrony_timesyncd_check.status is defined
+    - __chrony_timesyncd_check.status.ActiveState in ['active', 'activating']
