@@ -5,6 +5,9 @@
 # Verify time synchronization using chronyc utility.
 # =============================================================================
 
+# Flush handlers so the verification below observes the service state AFTER any pending
+# restart triggered by a configuration change, not the state from before it.
+# Note: this flushes ALL pending handlers in the current play, not only this role's.
 - name: Chrony | test | Flush handlers
   ansible.builtin.meta: flush_handlers
 
