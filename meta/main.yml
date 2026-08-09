@@ -1,8 +1,11 @@
 ---
+# =============================================================================
+# Ansible Role: Chrony - Galaxy Metadata
+# =============================================================================
 galaxy_info:
   role_name: chrony
-  author: Grzegorz Franus
   namespace: grzegorzfranus
+  author: Grzegorz Franus
   description: >
     Ansible role to install and configure Chrony NTP client/server.
     Manages service lifecycle, NTP configuration, logging, and security hardening.
