@@ -52,6 +52,7 @@
       - chrony_run_test is boolean
       - chrony_local_stratum_enable is boolean
     fail_msg: "Boolean flags must be true or false"
+    success_msg: "Boolean flags are valid"
 
 - name: Chrony | assert | Validate role action choices
   ansible.builtin.assert:
@@ -308,14 +309,14 @@
   when: chrony_rtc_settings.rtcfile_enable | default(false) | bool
 
 # rtcfile is required for rtcautotrim per chrony documentation
-- name: Chrony | assert | Warn if rtcautotrim is enabled without rtcfile
+- name: Chrony | assert | Validate rtcautotrim requires rtcfile
   ansible.builtin.assert:
     that:
       - chrony_rtc_settings.rtcfile_enable | default(false) | bool
-    fail_msg: |
-      WARNING: rtcautotrim is enabled but rtcfile is disabled!
-      According to chrony documentation, 'rtcautotrim' is ONLY effective with 'rtcfile' directive.
-      Please set 'chrony_rtc_settings.rtcfile_enable: true' for rtcautotrim to work.
+    fail_msg: >-
+      rtcautotrim is enabled but rtcfile is disabled.
+      Per chrony documentation 'rtcautotrim' is only effective together with the 'rtcfile'
+      directive. Set 'chrony_rtc_settings.rtcfile_enable: true'.
       See: https://chrony-project.org/doc/3.4/chrony.conf.html
     success_msg: "rtcautotrim configuration is valid (rtcfile is enabled)"
   when: chrony_rtc_settings.rtcautotrim_enable | default(false) | bool
