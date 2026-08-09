@@ -1,8 +1,8 @@
 # Ansible Role: Chrony
 
-|Source|Version|CI|License|
-|------|-------|--|-------|
-|[![Source Code](https://img.shields.io/badge/source-github-blue.svg)](https://github.com/grzegorzfranus/ansible-role-chrony)|[![Version](https://img.shields.io/github/v/release/grzegorzfranus/ansible-role-chrony)](https://github.com/grzegorzfranus/ansible-role-chrony/releases)|[![CI](https://github.com/grzegorzfranus/ansible-role-chrony/actions/workflows/ci.yml/badge.svg)](https://github.com/grzegorzfranus/ansible-role-chrony/actions/workflows/ci.yml)|[![Repository License](https://img.shields.io/badge/license-apache2.0-brightgreen.svg)](LICENSE)|
+| Source | Version | CI | License |
+|---|---|---|---|
+| [![Source Code](https://img.shields.io/badge/source-github-blue.svg)](https://github.com/grzegorzfranus/ansible-role-chrony) | [![Version](https://img.shields.io/github/v/release/grzegorzfranus/ansible-role-chrony)](https://github.com/grzegorzfranus/ansible-role-chrony/releases) | [![CI](https://github.com/grzegorzfranus/ansible-role-chrony/actions/workflows/ci.yml/badge.svg)](https://github.com/grzegorzfranus/ansible-role-chrony/actions/workflows/ci.yml) | [![License](https://img.shields.io/badge/license-apache2.0-brightgreen.svg)](LICENSE) |
 
 This Ansible role installs and configures Chrony, a versatile implementation of the Network Time Protocol (NTP). It provides a robust, production-ready, and secure time synchronization solution with features like NTP server/pool configuration, log rotation management, service state control, and RTC alignment.
 
@@ -27,10 +27,17 @@ The role provides a flexible time synchronization architecture supporting both:
 - **Server Mode**: Acts as NTP server for local network clients
 - **Hybrid Mode**: Can simultaneously serve and sync time
 
-```
+```text
 External NTP Servers ←→ Chrony Server ←→ Local Clients
       (upstream)         (this host)      (downstream)
 ```
+
+### Delivery Method Decision: Distribution Package Repositories
+
+**Architecture Rationale**:
+- **Systemd Integration**: Installing native OS packages (`chrony`) ensures seamless systemd unit integration, journald logging, and standard service supervision.
+- **Distribution Security Updates**: Leveraging distribution package managers (`apt`, `dnf`) ensures access to security patches maintained by distribution vendors without manual recompilation.
+- **Hardware Access**: Real-Time Clock (RTC) sync (`/dev/rtc`) and Hardware Timestamping / PPS (`/dev/pps0`) require direct host device access, which native binary deployments handle without complex container device pass-through.
 
 ## 📋 Requirements
 
@@ -40,6 +47,7 @@ External NTP Servers ←→ Chrony Server ←→ Local Clients
 - **Privileges**: sudo/root access on target hosts
 
 ### Supported operating systems
+
 List of officially supported operating systems for this role:
 
 | OS Family | Version | Status |
@@ -54,18 +62,12 @@ List of officially supported operating systems for this role:
 
 > **Note**: EL 8 is not supported — `python3-dnf` bindings are compiled for Python 3.6, which is incompatible with ansible-core >= 2.17. Use EL 9 or newer.
 
-### Ansible version
-
-Ansible >= 2.15
-
-### Python version
-
-Python >= 3.9
-
 ### Setup module
+
 The role uses facts gathered by Ansible on the remote host. If you disable the Setup module in your playbook, the role will not work properly.
 
 ### Root access
+
 This role requires root access for package installation and service management. Make sure you are using a user with root privileges.
 
 ## 🚀 Quick Start
@@ -84,22 +86,7 @@ This role requires root access for package installation and service management. 
         chrony_service_enabled: true
 ```
 
-### 2. NTP Server Configuration
-
-```yaml
----
-- name: Configure NTP Server
-  hosts: ntp_servers
-  become: true
-  roles:
-    - role: grzegorzfranus.chrony
-      vars:
-        chrony_ntp_source_mode: "server"
-        chrony_ntp_clients:
-          - "allow 192.0.2.0/24"
-```
-
-### 3. Run the playbook
+### 2. Run the playbook
 
 ```bash
 ansible-playbook -i inventory chrony-setup.yml
@@ -127,26 +114,6 @@ chrony_rtc_settings:
 chrony_maxdistance: 3.0
 ```
 
-### Advanced Configuration
-
-Customize for specific requirements:
-
-```yaml
----
-- name: Advanced Chrony Configuration
-  hosts: all
-  become: true
-  vars:
-    chrony_ntp_source_mode: "pool"
-    chrony_configure_logrotate: true
-    chrony_log_enable: true
-    chrony_hardware_settings:
-      enable_hw_timestamp: true
-      hw_timestamp_interfaces: "*"
-  roles:
-    - role: grzegorzfranus.chrony
-```
-
 ## 📊 Variables
 
 > [!IMPORTANT]
@@ -162,12 +129,12 @@ Customize for specific requirements:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `chrony_role_action` | Define which parts of the role to execute (Options: `all`, `prerequisites`, `install`, `configure`, `logrotate`, `upgrade`) | `"all"` |
-| `chrony_service_enabled` | Whether to enable Chrony service | `true` |
+| `chrony_service_enabled` | Whether to enable Chrony service on boot | `true` |
 | `chrony_configure_logrotate` | Enable/disable logrotate configuration for Chrony logs | `false` |
 | `chrony_port_disabled` | Disable NTP listening port (UDP 123) for client-only nodes | `false` |
 | `chrony_bind_cmd_address_enable` | Restrict command socket binding to specific loopback addresses | `true` |
 | `chrony_bind_cmd_addresses` | List of loopback addresses to bind the command interface to | `["127.0.0.1", "::1"]` |
-| `chrony_run_test` | Enable test mode (useful for debugging) | `false` |
+| `chrony_run_test` | Run time synchronization verification after configuration | `false` |
 
 ### System Clock Management
 
@@ -189,7 +156,7 @@ Customize for specific requirements:
 | `chrony_default_access` | Default access policy (deny/allow) | `"deny"` |
 | `chrony_local_stratum_enable` | Enable local reference source to serve time even when unsynchronized | `false` |
 | `chrony_local_stratum` | Stratum level to report when serving time unsynchronized | `10` |
-| `chrony_auth_settings` | Authentication settings dictionary (enable, selectmode) | *See defaults/main.yml* |
+| `chrony_auth_settings` | Authentication settings dictionary (`enable`, `selectmode`) | *See defaults/main.yml* |
 | `chrony_ntp_clients` | List of allowed NTP clients | `[]` |
 
 ### Leap Second Settings
@@ -197,7 +164,7 @@ Customize for specific requirements:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `chrony_leapsectz` | Leap seconds timezone | `"right/UTC"` |
-| `chrony_leapsec_settings` | Leap second handling configuration dictionary (mode, maxslewrate, smoothtime) | *See defaults/main.yml* |
+| `chrony_leapsec_settings` | Leap second handling configuration dictionary (`mode`, `maxslewrate`, `smoothtime`) | *See defaults/main.yml* |
 
 ### Logging Configuration
 
@@ -212,38 +179,37 @@ Customize for specific requirements:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `chrony_logrotate_options` | Dictionary of logrotate settings (archive_directory_path, frequency, count, missingok, compress, nocreate, copytruncate, dateext) | *See defaults/main.yml* |
+| `chrony_logrotate_options` | Dictionary of logrotate settings (`archive_directory_path`, `frequency`, `count`, `missingok`, `compress`, `nocreate`, `copytruncate`, `dateext`) | *See defaults/main.yml* |
 
 ### Real-Time Clock (RTC) Settings
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `chrony_rtc_settings` | Dictionary of RTC settings (rtcsync_enable, rtconutc_enable, rtcfile_enable, rtcfile_path, rtcautotrim_enable, rtcautotrim_interval, rtcdevice) | *See defaults/main.yml* |
+| `chrony_rtc_settings` | Dictionary of RTC settings (`rtcsync_enable`, `rtconutc_enable`, `rtcfile_enable`, `rtcfile_path`, `rtcautotrim_enable`, `rtcautotrim_interval`, `rtcdevice`) | *See defaults/main.yml* |
 
 ### Hardware Timestamping & Reference Clock
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `chrony_hardware_settings` | Hardware timestamping and reference clock dictionary (enable_hw_timestamp, hw_timestamp_interfaces, refclock_enable, refclock_pps, refclock_precision) | *See defaults/main.yml* |
+| `chrony_hardware_settings` | Hardware timestamping and reference clock dictionary (`enable_hw_timestamp`, `hw_timestamp_interfaces`, `refclock_enable`, `refclock_pps`, `refclock_precision`) | *See defaults/main.yml* |
 
 ### System Settings
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `chrony_system_settings` | System performance dictionary (`dumpdir`) | *See defaults/main.yml* |
-| `chrony_system_settings.dumpdir` | Directory for storing clock state dumps | `"/var/lib/chrony"` |
 
 ### Temperature Compensation
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `chrony_temp_compensation` | Temperature compensation dictionary (enable, sensor_file, update_interval, config_file) | *See defaults/main.yml* |
+| `chrony_temp_compensation` | Temperature compensation dictionary (`enable`, `sensor_file`, `update_interval`, `config_file`) | *See defaults/main.yml* |
 
 ### Client Settings
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `chrony_client_settings` | NTP client options dictionary (use_dhcp, dhcp_sourcedir, conf_dir, initstepslew) | *See defaults/main.yml* |
+| `chrony_client_settings` | NTP client options dictionary (`use_dhcp`, `dhcp_sourcedir`, `conf_dir`, `initstepslew`) | *See defaults/main.yml* |
 
 ## 📌 Role Properties
 
@@ -256,7 +222,7 @@ Customize for specific requirements:
 
 ## 📤 Role Output
 
-This role does not set any public output facts.
+This role does not set any public output facts. All internal facts use the double-underscore prefix (`__chrony_*`).
 
 ## 🔍 Verification
 
@@ -300,33 +266,17 @@ sudo journalctl -u chrony -f
 
 ## 🛡️ Security Features
 
-- ✅ **Secure Default Configuration**: Minimal attack surface with deny-by-default access
-- ✅ **File Permissions**: Proper ownership and permissions for configuration files
-- ✅ **Service Isolation**: Runs with minimal required privileges
-- ✅ **Authentication Support**: NTP authentication key management
-- ✅ **Access Control**: Client whitelist/blacklist capability
-- ✅ **Configuration Validation**: Input validation and secure defaults
-
-### Enhanced Security Configuration
-
-```yaml
-# Restrict client access
-chrony_default_access: "deny"
-chrony_ntp_clients:
-  - "allow 192.0.2.0/24"
-  - "deny 192.0.2.100"
-
-# Enable authentication
-chrony_auth_settings:
-  enable: true
-  selectmode: "require"
-```
+- ✅ **Secure Default Configuration**: Minimal attack surface with deny-by-default access policy (`chrony_default_access: "deny"`)
+- ✅ **File Permissions**: Proper ownership (`_chrony` / `chrony`) and restricted mode (`0640` / `0750`) for configuration and log directories
+- ✅ **Service Isolation**: Runs with minimal required system privileges under dedicated service account
+- ✅ **Authentication Support**: NTP authentication key management (`chrony_auth_settings`)
+- ✅ **Access Control**: Client subnet whitelist/blacklist capability (`chrony_ntp_clients`)
+- ✅ **Command Interface Binding**: Binds command socket strictly to loopback addresses (`127.0.0.1`, `::1`) by default
+- ✅ **Protected Secrets**: Protected keys inside `chrony.keys` (store using Ansible Vault in production)
 
 ### Uninstall
 
-Automated removal is not currently in scope for this role. To remove Chrony
-manually, stop the service and remove the package using your distribution's
-package manager:
+Automated removal is not currently in scope for this role. To remove Chrony manually, stop the service and remove the package using your distribution's package manager:
 
 ```bash
 sudo systemctl disable --now chronyd   # 'chrony' on Debian/Ubuntu
@@ -340,19 +290,10 @@ Configuration files are backed up automatically using Ansible's `backup: true` d
 1. Restore the configuration files from the `.bak` timestamps created in the configuration directory.
 2. Restart the chrony service.
 
-## 🔒 Security considerations
-
-- Keep keys inside `chrony.keys` protected. Use Ansible Vault for key variables.
-- Restrict command interface binding using `chrony_bind_cmd_address_enable: true` and specify loopback interfaces.
-
 ## 🧪 Check mode behavior
 
 - Most validation and status checks run normally in Check Mode.
 - Mutating commands (such as package installation and service management) are safely skipped.
-
-## 🏷️ Tags usage
-
-- Use `--tags` to run selective parts of the role: `always`, `chrony_setup`, `chrony_init`, `chrony_validate`, `chrony_requirements`, `chrony_install`, `chrony_configure`, `chrony_logrotate`, `chrony_upgrade`, `chrony_test`, `chrony_verify`.
 
 ## 🌐 Network resilience
 
@@ -381,7 +322,7 @@ sudo journalctl -u chrony --no-pager -n 50
 sudo chronyc makestep
 
 # Check firewall rules for UDP 123
-sudo nmap -p 123 -sU <ntp-server-ip>
+sudo nmap -p 123 -sU 192.0.2.1
 ```
 
 ### Log Rotation Problems
@@ -415,7 +356,20 @@ ansible-role-chrony/
 │   ├── main.yml             # Role metadata and Galaxy information
 │   └── argument_specs.yml   # Native argument specification validation
 ├── molecule/                # Molecule testing framework
-│   └── default/             # Default testing scenario
+│   ├── default/             # Default testing scenario (NTP client/server)
+│   │   ├── converge.yml
+│   │   ├── create.yml
+│   │   ├── destroy.yml
+│   │   ├── molecule.yml
+│   │   ├── prepare.yml
+│   │   └── verify.yml
+│   └── logging/             # Log rotation & archival testing scenario
+│       ├── converge.yml
+│       ├── create.yml
+│       ├── destroy.yml
+│       ├── molecule.yml
+│       ├── prepare.yml
+│       └── verify.yml
 ├── tasks/
 │   ├── main.yml             # Main task orchestration
 │   ├── assert.yml           # Variable validation and system compatibility
@@ -438,7 +392,7 @@ ansible-role-chrony/
 
 ## 🏷️ Tags
 
-All tags are prefixed with `chrony_` to avoid collisions.
+All tags (except `always`) are prefixed with `chrony_` to avoid collisions. Use `--tags` to run selective parts of the role.
 
 | Tag | Description |
 |-----|-------------|
@@ -483,9 +437,66 @@ Automated via [Release Please](https://github.com/googleapis/release-please):
 
 ## Example Playbooks
 
+### Basic NTP Server Setup
+
 ```yaml
 ---
-- name: Configure Chrony NTP Synchronization
+- name: Configure Local NTP Server
+  hosts: ntp_servers
+  become: true
+  roles:
+    - role: grzegorzfranus.chrony
+      vars:
+        chrony_ntp_source_mode: "server"
+        chrony_ntp_clients:
+          - "allow 192.0.2.0/24"
+```
+
+### Advanced NTP Client with Hardware Timestamping
+
+```yaml
+---
+- name: Advanced Chrony Configuration with Hardware Timestamping
+  hosts: all
+  become: true
+  roles:
+    - role: grzegorzfranus.chrony
+      vars:
+        chrony_ntp_source_mode: "pool"
+        chrony_configure_logrotate: true
+        chrony_log_enable: true
+        chrony_hardware_settings:
+          enable_hw_timestamp: true
+          hw_timestamp_interfaces: "*"
+          refclock_enable: false
+          refclock_pps: "/dev/pps0"
+          refclock_precision: "1e-7"
+```
+
+### Enhanced Security Configuration
+
+```yaml
+---
+- name: Chrony Hardened Security Configuration
+  hosts: ntp_servers
+  become: true
+  roles:
+    - role: grzegorzfranus.chrony
+      vars:
+        chrony_default_access: "deny"
+        chrony_ntp_clients:
+          - "allow 192.0.2.0/24"
+          - "deny 198.51.100.100"
+        chrony_auth_settings:
+          enable: true
+          selectmode: "require"
+```
+
+### Full Feature Production Setup
+
+```yaml
+---
+- name: Configure Production Chrony NTP Service
   hosts: all
   become: true
   roles:
@@ -494,8 +505,8 @@ Automated via [Release Please](https://github.com/googleapis/release-please):
         chrony_service_enabled: true
         chrony_ntp_source_mode: "pool"
         chrony_ntp_servers:
-          - "0.pool.ntp.org iburst"
-          - "1.pool.ntp.org iburst"
+          - "0.pool.ntp.org iburst minpoll 4 maxpoll 8"
+          - "1.pool.ntp.org iburst minpoll 4 maxpoll 8"
         chrony_log_enable: true
         chrony_configure_logrotate: true
 ```
@@ -504,16 +515,47 @@ Automated via [Release Please](https://github.com/googleapis/release-please):
 
 Contributions, bug reports, and feature requests are welcome!
 
-- Fork the repository and create your branch from `main`
-- Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
-- Centralized workflows from [github-workflows](https://github.com/grzegorzfranus/github-workflows) version `v3.0.1` are used to run CI/CD pipelines
-- Ensure your code passes all CI checks (YAML lint, Ansible lint, Molecule tests)
-- Submit a pull request describing your changes (a template is available under `.github/PULL_REQUEST_TEMPLATE/pull_request_template.md` to help structure your PR description)
-- For major changes, please open an issue first to discuss what you would like to change (issue templates for bug reports, feature requests, and tasks are available under `.github/ISSUE_TEMPLATE/`)
+### Commit Message Guidelines
+
+This repository follows the [Conventional Commits](https://www.conventionalcommits.org/) specification (`type(scope): description`). Allowed commit types:
+
+- `feat:` — A new feature
+- `fix:` — A bug fix
+- `refactor:` — Code change that neither fixes a bug nor adds a feature
+- `docs:` — Documentation only changes
+- `ci:` — Changes to CI configuration files and scripts
+- `build:` — Changes that affect the build system or external dependencies
+- `chore:` — Other changes that don't modify src or test files
+- `test:` — Adding missing tests or correcting existing tests
+- `perf:` — A code change that improves performance
+- `revert:` — Reverts a previous commit
+- `style:` — Changes that do not affect the meaning of the code (white-space, formatting, etc.)
+
+### Branch Naming Conventions
+
+Feature branches must conform to the repository CI branch name validation regex (`^(feature|bugfix|fix|hotfix|release|chore|docs|refactor|test|build|ci|perf|revert)/[a-zA-Z0-9-]+$`):
+
+- `feature/<description>`
+- `bugfix/<description>` or `fix/<description>`
+- `docs/<description>`
+- `chore/<description>`
+- `refactor/<description>`
+
+### Quality Gates
+
+Before submitting a Pull Request, ensure your code passes all quality checks:
+
+```bash
+yamllint .
+ansible-lint
+molecule test --all
+```
+
+Centralized workflows from [github-workflows](https://github.com/grzegorzfranus/github-workflows) version `v3.0.1` run these checks automatically on PR creation.
 
 ## 📝 License
 
-This project is licensed under the Apache-2.0 License - see the LICENSE file for details.
+This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## 👥 Author Information
 
