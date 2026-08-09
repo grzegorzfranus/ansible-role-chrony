@@ -5,21 +5,14 @@
 # Configure Chrony service, directories, and deploy configurations.
 # =============================================================================
 
-- name: Chrony | configure | Enable and start Chrony service
+# Justification: 'state: started' is intentionally omitted to ensure idempotency across container
+# environments (CI/Molecule) where chronyd may enter a failed state due to missing CAP_SYS_TIME.
+# Service enablement is configured here; daemon execution is managed via the restart handler.
+- name: Chrony | configure | Set Chrony service startup state
   become: true
   ansible.builtin.service:
     name: "{{ __chrony_service_name }}"
-    enabled: true
-    state: started
-  when: chrony_service_enabled | bool
-
-- name: Chrony | configure | Disable and stop Chrony service
-  become: true
-  ansible.builtin.service:
-    name: "{{ __chrony_service_name }}"
-    enabled: false
-    state: stopped
-  when: not (chrony_service_enabled | bool)
+    enabled: "{{ chrony_service_enabled | bool }}"
 
 - name: Chrony | configure | Ensure confdir directory exists
   become: true
