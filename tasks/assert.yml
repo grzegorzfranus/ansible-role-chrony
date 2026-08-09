@@ -90,6 +90,8 @@
 - name: Chrony | assert | Validate NTP server list is not empty
   ansible.builtin.assert:
     that:
+      - chrony_ntp_servers is defined
+      - chrony_ntp_servers is iterable
       - chrony_ntp_servers | length > 0
     fail_msg: "NTP server list is empty. Must provide at least one NTP server"
     success_msg: "NTP server list has {{ chrony_ntp_servers | length }} servers"
@@ -97,6 +99,8 @@
 - name: Chrony | assert | Validate maximum distance range
   ansible.builtin.assert:
     that:
+      - chrony_maxdistance is defined
+      - chrony_maxdistance is number
       - chrony_maxdistance > 0
       - chrony_maxdistance <= 16.0
     fail_msg: >-
@@ -117,6 +121,8 @@
 - name: Chrony | assert | Validate minimum sources range
   ansible.builtin.assert:
     that:
+      - chrony_num_minsources is defined
+      - chrony_num_minsources is integer
       - chrony_num_minsources > 0
       - chrony_num_minsources <= 10
     fail_msg: >-
@@ -127,6 +133,8 @@
 - name: Chrony | assert | Validate maximum update skew range
   ansible.builtin.assert:
     that:
+      - chrony_maxupdateskew is defined
+      - chrony_maxupdateskew is number
       - chrony_maxupdateskew > 0
       - chrony_maxupdateskew <= 1000.0
     fail_msg: >-
@@ -137,7 +145,10 @@
 - name: Chrony | assert | Validate step threshold format
   ansible.builtin.assert:
     that:
-      - chrony_makestep is search('^[0-9]+(\.[0-9]+)? -?[0-9]+$')
+      - chrony_makestep is defined
+      - chrony_makestep is string
+      - chrony_makestep | length > 0
+      - chrony_makestep is match('^[0-9]+(\.[0-9]+)? -?[0-9]+$')
     fail_msg: >-
       Invalid step threshold '{{ chrony_makestep }}'.
       Must be '<threshold> <limit>' (e.g., '1.0 3').
@@ -151,7 +162,9 @@
 - name: Chrony | assert | Validate command key ID
   ansible.builtin.assert:
     that:
-      - (chrony_command_key_id | int) > 0
+      - chrony_command_key_id is defined
+      - chrony_command_key_id is integer
+      - chrony_command_key_id > 0
     fail_msg: "Invalid command key ID '{{ chrony_command_key_id }}'. Must be a positive integer"
     success_msg: "Command key ID is valid"
 
