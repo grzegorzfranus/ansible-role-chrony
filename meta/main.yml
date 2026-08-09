@@ -30,18 +30,10 @@ galaxy_info:
 
   galaxy_tags:
     - chrony
-    - time
     - ntp
+    - time
     - timesync
     - system
-    - networking
     - security
-    - monitoring
-    - maintenance
-    - debian
-    - ubuntu
-    - el
-    - rhel
-    - rocky
 
 dependencies: []
