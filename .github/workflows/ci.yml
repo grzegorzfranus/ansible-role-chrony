@@ -5,7 +5,6 @@ run-name: "CI: ${{ github.event.pull_request.title || github.ref_name }} by @${{
 on:
   pull_request: {}
 
-
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
