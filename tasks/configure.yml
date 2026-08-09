@@ -10,7 +10,6 @@
   ansible.builtin.service:
     name: "{{ __chrony_service_name }}"
     enabled: "{{ chrony_service_enabled | bool }}"
-    state: "{{ 'started' if (chrony_service_enabled | bool) else 'stopped' }}"
 
 - name: Chrony | configure | Ensure confdir directory exists
   become: true
