@@ -5,11 +5,21 @@
 # Configure Chrony service, directories, and deploy configurations.
 # =============================================================================
 
-- name: Chrony | configure | Set Chrony service startup state
+- name: Chrony | configure | Enable and start Chrony service
   become: true
   ansible.builtin.service:
     name: "{{ __chrony_service_name }}"
-    enabled: "{{ chrony_service_enabled | bool }}"
+    enabled: true
+    state: started
+  when: chrony_service_enabled | bool
+
+- name: Chrony | configure | Disable and stop Chrony service
+  become: true
+  ansible.builtin.service:
+    name: "{{ __chrony_service_name }}"
+    enabled: false
+    state: stopped
+  when: not (chrony_service_enabled | bool)
 
 - name: Chrony | configure | Ensure confdir directory exists
   become: true
