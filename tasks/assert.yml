@@ -111,6 +111,8 @@
 - name: Chrony | assert | Validate NTS dump directory is absolute path
   ansible.builtin.assert:
     that:
+      - chrony_ntsdumpdir is defined
+      - chrony_ntsdumpdir is string
       - chrony_ntsdumpdir | length > 0
       - chrony_ntsdumpdir is search('^/')
     fail_msg: >-
@@ -171,6 +173,8 @@
 - name: Chrony | assert | Validate default access policy choices
   ansible.builtin.assert:
     that:
+      - chrony_default_access is defined
+      - chrony_default_access is string
       - chrony_default_access in ['deny', 'allow']
     fail_msg: >-
       Invalid default access policy '{{ chrony_default_access }}'.
@@ -180,6 +184,7 @@
 - name: Chrony | assert | Validate local stratum level
   ansible.builtin.assert:
     that:
+      - chrony_local_stratum is defined
       - chrony_local_stratum is integer
       - chrony_local_stratum > 0
       - chrony_local_stratum <= 16
