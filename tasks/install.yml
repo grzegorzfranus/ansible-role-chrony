@@ -11,12 +11,20 @@
     name: "{{ __chrony_package_name }}"
     state: present
     update_cache: true
+  register: __chrony_package_install
+  retries: 3
+  delay: 5
+  until: __chrony_package_install is succeeded
 
 - name: Chrony | install | Install tzdata-legacy for right/ timezone support
   become: true
   ansible.builtin.package:
     name: tzdata-legacy
     state: present
+  register: __chrony_tzdata_install
+  retries: 3
+  delay: 5
+  until: __chrony_tzdata_install is succeeded
   when:
     - chrony_leapsectz is defined
     - "'right/' in chrony_leapsectz"

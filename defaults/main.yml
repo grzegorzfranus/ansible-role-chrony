@@ -36,7 +36,7 @@
 # Valid values: 'all' (prerequisites -> install -> configure), 'prerequisites', 'install', 'configure', 'logrotate', 'upgrade'
 chrony_role_action: "all"
 
-# Ensure the chrony service is enabled and running
+# Ensure the chrony service is enabled on system startup
 chrony_service_enabled: true
 
 # Whether to configure logrotate for chrony logs

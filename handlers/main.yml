@@ -11,5 +11,5 @@
     name: "{{ __chrony_service_name }}"
     state: restarted
     daemon_reload: true
-    enabled: "{{ chrony_service_enabled }}"
   listen: "restart chrony"
+  when: chrony_service_enabled | bool

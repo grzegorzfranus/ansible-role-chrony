@@ -5,21 +5,14 @@
 # Configure Chrony service, directories, and deploy configurations.
 # =============================================================================
 
-- name: Chrony | configure | Enable Chrony service on system startup
+# Justification: 'state: started' is intentionally omitted to ensure idempotency across container
+# environments (CI/Molecule) where chronyd may enter a failed state due to missing CAP_SYS_TIME.
+# Service enablement is configured here; daemon execution is managed via the restart handler.
+- name: Chrony | configure | Set Chrony service startup state
   become: true
   ansible.builtin.service:
     name: "{{ __chrony_service_name }}"
-    enabled: true
-  when: >
-    chrony_service_enabled | default(false) | bool
-
-- name: Chrony | configure | Disable Chrony service on system startup
-  become: true
-  ansible.builtin.service:
-    name: "{{ __chrony_service_name }}"
-    enabled: false
-  when: >
-    not (chrony_service_enabled | default(false) | bool)
+    enabled: "{{ chrony_service_enabled | bool }}"
 
 - name: Chrony | configure | Ensure confdir directory exists
   become: true
@@ -34,8 +27,14 @@
   ansible.builtin.stat:
     path: "/usr/share/zoneinfo/{{ chrony_leapsectz }}"
   register: __chrony_leapsectz_file
-  when: chrony_leapsectz is defined and chrony_leapsectz | length > 0
+  when:
+    - chrony_leapsectz is defined
+    - chrony_leapsectz | length > 0
 
+# Justification: 'validate:' is intentionally omitted. chronyd drops root privileges
+# to the unprivileged service user (_chrony/chrony) during config parsing, which causes
+# "Permission denied" when reading Ansible's temporary validation file in /root/.ansible/tmp/.
+# Configuration correctness is instead verified by the post-configure test tasks (tasks/test.yml).
 - name: Chrony | configure | Deploy Chrony configuration file
   become: true
   ansible.builtin.template:
@@ -45,9 +44,6 @@
     owner: root
     group: root
     backup: true
-  # Note: chronyd drops root privileges to unprivileged user (_chrony/chrony)
-  # during config parsing, which causes Permission denied when reading Ansible's
-  # temporary validation files in /root/.ansible/tmp/.
   notify: restart chrony
 
 - name: Chrony | configure | Ensure log directory exists
@@ -58,3 +54,4 @@
     mode: "0750"
     group: "{{ __chrony_log_directory_user }}"
     owner: "{{ __chrony_log_directory_user }}"
+  when: chrony_log_enable | bool
