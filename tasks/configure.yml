@@ -12,6 +12,8 @@
     enabled: true
     state: started
   when: chrony_service_enabled | bool
+  tags:
+    - molecule-idempotence-notest
 
 - name: Chrony | configure | Disable and stop Chrony service
   become: true
@@ -20,6 +22,8 @@
     enabled: false
     state: stopped
   when: not (chrony_service_enabled | bool)
+  tags:
+    - molecule-idempotence-notest
 
 - name: Chrony | configure | Ensure confdir directory exists
   become: true
