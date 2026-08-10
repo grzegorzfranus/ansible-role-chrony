@@ -34,6 +34,7 @@
       - __chrony_keyfile_path is defined
       - __chrony_binary_path is defined
       - __chrony_tzdata_legacy_package is defined
+      - __chrony_unit_writable_paths is defined
     fail_msg: >-
       Internal OS-specific variables are not loaded.
       Ensure that vars/ files are correctly structured for this OS family.

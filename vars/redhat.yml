@@ -45,3 +45,11 @@ __chrony_confdir_path: "/etc/chrony.d"
 # EL ships 'right/' zones in the base tzdata package, so no extra package is required.
 # Valid values: package name string, or empty string when no extra package applies
 __chrony_tzdata_legacy_package: ""
+
+# Directories the packaged systemd unit already grants write access to, via
+# LogsDirectory= and StateDirectory=. Paths configured outside of these require an
+# explicit ReadWritePaths= grant, otherwise ProtectSystem= blocks chronyd from writing.
+# Valid values: list of absolute path strings
+__chrony_unit_writable_paths:
+  - "/var/log/chrony"
+  - "/var/lib/chrony"

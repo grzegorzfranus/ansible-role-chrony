@@ -55,3 +55,11 @@ __chrony_tzdata_legacy_package: >-
         ansible_facts['distribution_major_version'] | int >= 26)
      )
      else '' }}
+
+# Directories the packaged systemd unit already grants write access to, via
+# LogsDirectory= and StateDirectory=. Paths configured outside of these require an
+# explicit ReadWritePaths= grant, otherwise ProtectSystem= blocks chronyd from writing.
+# Valid values: list of absolute path strings
+__chrony_unit_writable_paths:
+  - "/var/log/chrony"
+  - "/var/lib/chrony"

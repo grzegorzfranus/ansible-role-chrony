@@ -23,6 +23,16 @@
     owner: root
     group: root
 
+- name: Chrony | configure | Ensure log directory exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ chrony_logdir_path }}"
+    state: directory
+    mode: "0750"
+    group: "{{ __chrony_log_directory_user }}"
+    owner: "{{ __chrony_log_directory_user }}"
+  when: chrony_log_enable | bool
+
 - name: Chrony | configure | Check if leapsectz timezone file exists
   ansible.builtin.stat:
     path: "/usr/share/zoneinfo/{{ chrony_leapsectz }}"
@@ -30,6 +40,59 @@
   when:
     - chrony_leapsectz is defined
     - chrony_leapsectz | length > 0
+
+- name: Chrony | configure | Manage systemd path access overrides
+  vars:
+    __chrony_configured_write_paths: >-
+      {{ ([chrony_logdir_path] if chrony_log_enable | bool else [])
+         + ([chrony_logrotate_options.archive_directory_path] if chrony_configure_logrotate | bool else [])
+         + [chrony_system_settings.dumpdir, chrony_ntsdumpdir] }}
+    __chrony_missing_write_paths: >-
+      {{ __chrony_configured_write_paths
+         | unique
+         | reject('match', '^(' + (__chrony_unit_writable_paths | map('regex_escape') | join('|')) + ')(/|$)')
+         | list }}
+  block:
+    - name: Chrony | configure | Ensure custom write directories exist
+      become: true
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ __chrony_log_directory_user }}"
+        group: "{{ __chrony_log_directory_user }}"
+        mode: "0750"
+      loop: "{{ __chrony_missing_write_paths }}"
+      when: __chrony_missing_write_paths | length > 0
+
+    - name: Chrony | configure | Ensure systemd drop-in directory exists
+      become: true
+      ansible.builtin.file:
+        path: "/etc/systemd/system/{{ __chrony_service_name }}.service.d"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      when: __chrony_missing_write_paths | length > 0
+
+    - name: Chrony | configure | Grant systemd write access to configured chrony paths
+      become: true
+      ansible.builtin.template:
+        src: "systemd/override.conf.j2"
+        dest: "/etc/systemd/system/{{ __chrony_service_name }}.service.d/50-chrony-paths.conf"
+        owner: root
+        group: root
+        mode: "0644"
+        backup: true
+      when: __chrony_missing_write_paths | length > 0
+      notify: restart chrony
+
+    - name: Chrony | configure | Remove systemd path override when default paths used
+      become: true
+      ansible.builtin.file:
+        path: "/etc/systemd/system/{{ __chrony_service_name }}.service.d/50-chrony-paths.conf"
+        state: absent
+      when: __chrony_missing_write_paths | length == 0
+      notify: restart chrony
 
 # Justification: 'validate:' is intentionally omitted. chronyd drops root privileges
 # to the unprivileged service user (_chrony/chrony) during config parsing, which causes
@@ -45,13 +108,3 @@
     group: root
     backup: true
   notify: restart chrony
-
-- name: Chrony | configure | Ensure log directory exists
-  become: true
-  ansible.builtin.file:
-    path: "{{ chrony_logdir_path }}"
-    state: directory
-    mode: "0750"
-    group: "{{ __chrony_log_directory_user }}"
-    owner: "{{ __chrony_log_directory_user }}"
-  when: chrony_log_enable | bool
