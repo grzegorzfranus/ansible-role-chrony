@@ -40,3 +40,8 @@ __chrony_binary_path: "/usr/sbin/chronyd"
 
 # Absolute path to the Chrony configuration include directory on EL9 / RedHat family
 __chrony_confdir_path: "/etc/chrony.d"
+
+# Package providing leap-second aware 'right/' timezone data on this distribution.
+# EL ships 'right/' zones in the base tzdata package, so no extra package is required.
+# Valid values: package name string, or empty string when no extra package applies
+__chrony_tzdata_legacy_package: ""

@@ -41,3 +41,17 @@ __chrony_binary_path: "/usr/sbin/chronyd"
 
 # Absolute path to the Chrony configuration include directory on Debian/Ubuntu
 __chrony_confdir_path: "/etc/chrony/conf.d"
+
+# Package providing leap-second aware 'right/' timezone data on this distribution.
+# Debian 13+ and Ubuntu 26.04+ split these zones out of the base tzdata package;
+# on older releases they ship with tzdata and no extra package is needed.
+# Valid values: package name string, or empty string when no extra package applies
+__chrony_tzdata_legacy_package: >-
+  {{ 'tzdata-legacy'
+     if (
+       (ansible_facts['distribution'] == 'Debian' and
+        ansible_facts['distribution_major_version'] | int >= 13) or
+       (ansible_facts['distribution'] == 'Ubuntu' and
+        ansible_facts['distribution_major_version'] | int >= 26)
+     )
+     else '' }}
