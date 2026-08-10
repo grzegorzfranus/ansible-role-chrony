@@ -3,7 +3,7 @@ name: "CI"
 run-name: "CI: ${{ github.event.pull_request.title || github.ref_name }} by @${{ github.actor }}"
 
 on:
-  pull_request:
+  pull_request: {}
 
 concurrency:
   group: ci-${{ github.ref }}

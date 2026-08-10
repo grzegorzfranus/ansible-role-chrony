@@ -51,21 +51,31 @@
           # Debian uses Type=notify, RHEL uses Type=forking — both conflict
           # with chronyd -n (foreground mode). Type=simple works universally.
           Type=simple
+          # Unset NOTIFY_SOCKET as a defensive measure: with Type=simple systemd should not pass it,
+          # but chronyd attempts sd_notify whenever the variable is present in the environment.
+          # Observed on ubuntu2604: chronyd[1956]: Fatal error : Could not send notification to $NOTIFY_SOCKET.
+          # Harmless on distros where it is already unset.
+          UnsetEnvironment=NOTIFY_SOCKET
           # Run chronyd in foreground (-n) free-running mode (-x) inside Molecule
           # containers. -n keeps chronyd in foreground (matches Type=simple).
           # -x avoids adjusting system clock (no CAP_SYS_TIME needed).
           ExecStart=
           ExecStart=/usr/sbin/chronyd -n -x $DAEMON_OPTS
-          # Clear security sandboxing that conflicts with container testing.
-          ProtectSystem=
-          ProtectHome=
-          PrivateTmp=
-          NoNewPrivileges=
-          ProtectKernelTunables=
-          ProtectControlGroups=
-          ProtectHostname=
-          ProtectKernelLogs=
-          ProtectKernelModules=
+          # Disable systemd sandboxing for container testing.
+          # NOTE: an empty assignment (e.g. "ProtectSystem=") only resets LIST-type directives.
+          # For boolean/enum directives systemd rejects it with "Invalid argument" and keeps the
+          # vendor unit value — which, combined with the cleared LogsDirectory= below, left
+          # /var/log read-only and crashed chronyd on startup (observed on ubuntu2604; other
+          # matrix distros were unaffected). Always use explicit "=no" here.
+          ProtectSystem=no
+          ProtectHome=no
+          PrivateTmp=no
+          NoNewPrivileges=no
+          ProtectKernelTunables=no
+          ProtectControlGroups=no
+          ProtectHostname=no
+          ProtectKernelLogs=no
+          ProtectKernelModules=no
           # Clear systemd-managed directories to prevent ownership conflicts.
           # With User= cleared, systemd would set these dirs to root:root,
           # conflicting with role's _chrony ownership.

@@ -132,11 +132,11 @@
     # ============================================================
     # Verification checks — non-failing data collection
     # ============================================================
-    - name: Verify | Check if chrony package is installed
-      ansible.builtin.package:
-        name: "{{ __chrony_package_name }}"
-        state: present
-      register: __verify_package_result
+    - name: Verify | Query installed chrony package
+      ansible.builtin.command: "{{ __chrony_binary_path }} --version"
+      register: __verify_package_version
+      changed_when: false
+      failed_when: false
 
     - name: Verify | Check if installed binary is available
       ansible.builtin.stat:
@@ -144,18 +144,17 @@
         checksum_algorithm: sha256
       register: __verify_binary_result
 
-    - name: Verify | Check if chrony service is running
-      ansible.builtin.service:
-        name: "{{ __chrony_service_name }}"
-        state: started
-      register: __verify_service_result
+    - name: Verify | Query chrony service active state
+      ansible.builtin.command: "systemctl is-active {{ __chrony_service_name }}"
+      register: __verify_service_active
+      changed_when: false
+      failed_when: false
 
-    - name: Verify | Check if chrony service is enabled
-      ansible.builtin.service:
-        name: "{{ __chrony_service_name }}"
-        state: started
-        enabled: true
-      register: __verify_service_enabled_result
+    - name: Verify | Query chrony service boot state
+      ansible.builtin.command: "systemctl is-enabled {{ __chrony_service_name }}"
+      register: __verify_service_enabled
+      changed_when: false
+      failed_when: false
 
     - name: Verify | Check if chrony configuration file exists
       ansible.builtin.stat:
@@ -163,29 +162,11 @@
         checksum_algorithm: sha256
       register: __verify_config_result
 
-    - name: Verify | Check chrony configuration file permissions
-      ansible.builtin.file:
-        path: "{{ __chrony_config_path }}"
-        state: file
-        owner: root
-        group: root
-        mode: "0644"
-      register: __verify_config_perms_result
-
     - name: Verify | Check if log directory exists
       ansible.builtin.stat:
         path: "{{ chrony_logdir_path }}"
         checksum_algorithm: sha256
       register: __verify_logdir_result
-
-    - name: Verify | Check log directory permissions
-      ansible.builtin.file:
-        path: "{{ chrony_logdir_path }}"
-        state: directory
-        owner: "{{ __chrony_log_directory_user }}"
-        group: "{{ __chrony_log_directory_user }}"
-        mode: "0750"
-      register: __verify_logdir_perms_result
 
     - name: Verify | Check if logrotate configuration exists
       ansible.builtin.stat:
@@ -210,12 +191,33 @@
     # ============================================================
     # Assertions
     # ============================================================
+    - name: Verify | Assert chrony package is installed
+      ansible.builtin.assert:
+        that:
+          - __verify_package_version.rc == 0
+        fail_msg: "Chrony is not installed — '{{ __chrony_binary_path }} --version' returned {{ __verify_package_version.rc }}"
+        success_msg: "Chrony package verified"
+
     - name: Verify | Assert Chrony binary exists
       ansible.builtin.assert:
         that:
           - __verify_binary_result.stat.exists
         fail_msg: "Chrony binary not found at {{ __chrony_binary_path }}"
         success_msg: "Chrony binary verified at {{ __chrony_binary_path }}"
+
+    - name: Verify | Assert chrony service is active
+      ansible.builtin.assert:
+        that:
+          - __verify_service_active.stdout | trim == 'active'
+        fail_msg: "Chrony service is not active (reported: {{ __verify_service_active.stdout | trim }})"
+        success_msg: "Chrony service is active"
+
+    - name: Verify | Assert chrony service is enabled on boot
+      ansible.builtin.assert:
+        that:
+          - __verify_service_enabled.stdout | trim == 'enabled'
+        fail_msg: "Chrony service is not enabled on boot (reported: {{ __verify_service_enabled.stdout | trim }})"
+        success_msg: "Chrony service is enabled on boot"
 
     - name: Verify | Assert configuration file exists
       ansible.builtin.assert:
@@ -224,14 +226,37 @@
         fail_msg: "Chrony configuration file not found at {{ __chrony_config_path }}"
         success_msg: "Chrony configuration file verified"
 
-    - name: Verify | Show verification results
-      ansible.builtin.debug:
-        msg: "All Chrony verification checks completed successfully"
+    - name: Verify | Assert configuration file ownership and mode
+      ansible.builtin.assert:
+        that:
+          - __verify_config_result.stat.pw_name == 'root'
+          - __verify_config_result.stat.gr_name == 'root'
+          - __verify_config_result.stat.mode == '0644'
+        fail_msg: >-
+          Wrong configuration file permissions:
+          {{ __verify_config_result.stat.pw_name }}:{{ __verify_config_result.stat.gr_name }}
+          {{ __verify_config_result.stat.mode }} (expected root:root 0644)
+        success_msg: "Configuration file permissions verified (root:root 0644)"
+
+    - name: Verify | Assert log directory ownership and mode
+      ansible.builtin.assert:
+        that:
+          - __verify_logdir_result.stat.isdir
+          - __verify_logdir_result.stat.pw_name == __chrony_log_directory_user
+          - __verify_logdir_result.stat.gr_name == __chrony_log_directory_user
+          - __verify_logdir_result.stat.mode == '0750'
+        fail_msg: >-
+          Wrong log directory permissions:
+          {{ __verify_logdir_result.stat.pw_name }}:{{ __verify_logdir_result.stat.gr_name }}
+          {{ __verify_logdir_result.stat.mode }}
+          (expected {{ __chrony_log_directory_user }}:{{ __chrony_log_directory_user }} 0750)
+        success_msg: "Log directory permissions verified"
+      when: chrony_log_enable | bool
 
     - name: Verify | Final verification summary
       ansible.builtin.debug:
         msg:
-          - "Time synchronization: Configured and accurate"
+          - "Time synchronization: Status queried via chronyc tracking"
           - "Configuration files: Created with proper permissions"
           - "Logging setup: {{ 'Configured' if chrony_log_enable else 'Disabled' }}"
           - "Log rotation: {{ 'Configured' if chrony_configure_logrotate else 'Disabled' }}"

@@ -29,7 +29,7 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
     steps:
       - name: "📝 Run Release Please"
-        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7  # v5.0.0
         id: release
         with:
           config-file: release-please-config.json
@@ -73,7 +73,7 @@ jobs:
           echo "sha=$PR_SHA" >> "$GITHUB_OUTPUT"
 
       - name: "🔍 Checkout Release PR Branch"
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd  # v5.0.1
         with:
           ref: release-please--branches--main
           persist-credentials: false
@@ -82,7 +82,7 @@ jobs:
         run: pipx run yamllint .
 
       - name: "🔍 Validate GitHub Actions"
-        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7  # v2.2.0
 
       - name: "🔍 Validate Galaxy Metadata"
         run: |
