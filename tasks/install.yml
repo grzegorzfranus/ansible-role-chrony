@@ -5,6 +5,9 @@
 # Install Chrony packages and required dependencies.
 # =============================================================================
 
+# Note: 'update_cache' is not a documented parameter of ansible.builtin.package; it is passed
+# through to the backend module (apt/dnf), both of which support it. Revisit if support for a
+# package manager without that parameter is ever added.
 - name: Chrony | install | Install Chrony package
   become: true
   ansible.builtin.package:
@@ -16,10 +19,10 @@
   delay: 5
   until: __chrony_package_install is succeeded
 
-- name: Chrony | install | Install tzdata-legacy for right/ timezone support
+- name: Chrony | install | Install package providing right/ timezone data
   become: true
   ansible.builtin.package:
-    name: tzdata-legacy
+    name: "{{ __chrony_tzdata_legacy_package }}"
     state: present
   register: __chrony_tzdata_install
   retries: 3
@@ -28,8 +31,4 @@
   when:
     - chrony_leapsectz is defined
     - "'right/' in chrony_leapsectz"
-    - ansible_facts['os_family'] == "Debian"
-    - (ansible_facts['distribution'] == "Debian" and
-       ansible_facts['distribution_major_version'] | int >= 13) or
-      (ansible_facts['distribution'] == "Ubuntu" and
-       ansible_facts['distribution_major_version'] | int >= 26)
+    - __chrony_tzdata_legacy_package | length > 0

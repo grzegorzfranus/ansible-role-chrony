@@ -40,3 +40,19 @@ __chrony_binary_path: "/usr/sbin/chronyd"
 
 # Absolute path to the Chrony configuration include directory on EL9 / RedHat family
 __chrony_confdir_path: "/etc/chrony.d"
+
+# Package providing leap-second aware 'right/' timezone data on this distribution.
+# EL ships 'right/' zones in the base tzdata package, so no extra package is required.
+# Valid values: package name string, or empty string when no extra package applies
+__chrony_tzdata_legacy_package: ""
+
+# Directories every supported distribution already allows chronyd to write to — either
+# through LogsDirectory=/StateDirectory= in the packaged unit (Debian 12+, Ubuntu 24.04+),
+# or because the unit's ProtectSystem= level does not cover /var (EL9, Debian 11) or grants
+# /var/log explicitly (Ubuntu 22.04). Paths configured outside of these need an explicit
+# ReadWritePaths= grant. Kept deliberately conservative: a redundant grant is harmless,
+# a missing one crashes chronyd on startup.
+# Valid values: list of absolute path strings
+__chrony_unit_writable_paths:
+  - "/var/log/chrony"
+  - "/var/lib/chrony"

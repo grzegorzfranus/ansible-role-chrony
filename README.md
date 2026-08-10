@@ -128,7 +128,7 @@ chrony_maxdistance: 3.0
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `chrony_role_action` | Define which parts of the role to execute (Options: `all`, `prerequisites`, `install`, `configure`, `logrotate`, `upgrade`) | `"all"` |
+| `chrony_role_action` | Define which parts of the role to execute (Options: `all`, `prerequisites`, `install`, `configure`, `logrotate`, `upgrade`; note: `upgrade` upgrades the package and reapplies configuration) | `"all"` |
 | `chrony_service_enabled` | Enable the chrony service on boot and keep it running (false stops and disables it) | `true` |
 | `chrony_configure_logrotate` | Enable/disable logrotate configuration for Chrony logs | `false` |
 | `chrony_port_disabled` | Disable NTP listening port (UDP 123) for client-only nodes | `false` |
@@ -269,6 +269,7 @@ sudo journalctl -u chrony -f
 - ✅ **Secure Default Configuration**: Minimal attack surface with deny-by-default access policy (`chrony_default_access: "deny"`)
 - ✅ **File Permissions**: Proper ownership (`_chrony` / `chrony`) and restricted mode (`0640` / `0750`) for configuration and log directories
 - ✅ **Service Isolation**: Runs with minimal required system privileges under dedicated service account
+- ✅ **Systemd Sandboxing & Dynamic Write Grants**: Automatically deploys a systemd drop-in (`50-chrony-paths.conf`) with `ReadWritePaths=` grants when user-configured write paths (such as `chrony_logdir_path`, log rotate archive path, or dump directories) fall outside the package unit's default granted paths (`/var/log/chrony`, `/var/lib/chrony`), ensuring chronyd operates correctly under `ProtectSystem=strict`.
 - ✅ **Authentication Support**: NTP authentication key management (`chrony_auth_settings`)
 - ✅ **Access Control**: Client subnet whitelist/blacklist capability (`chrony_ntp_clients`)
 - ✅ **Command Interface Binding**: Binds command socket strictly to loopback addresses (`127.0.0.1`, `::1`) by default
@@ -378,8 +379,10 @@ ansible-role-chrony/
 ├── templates/
 │   ├── chrony/
 │   │   └── chrony.conf.j2   # Main chrony configuration template
-│   └── logrotate/
-│       └── chrony.j2        # Logrotate configuration template
+│   ├── logrotate/
+│   │   └── chrony.j2        # Logrotate configuration template
+│   └── systemd/
+│       └── override.conf.j2 # Systemd ReadWritePaths drop-in template
 └── vars/
     ├── main.yml             # Internal variables
     ├── debian.yml           # Debian family variables

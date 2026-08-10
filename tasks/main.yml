@@ -3,7 +3,7 @@
 # Ansible Role: Chrony - Tasks: Main
 # =============================================================================
 # Main task orchestrator for the Chrony role.
-# Flow: include_vars → assert → prerequisites → install → configure → logrotate → upgrade → test
+# Flow: include_vars → assert → prerequisites → install → upgrade → configure → logrotate → test
 # =============================================================================
 
 - name: Chrony | include_vars | Gather OS specific variables
@@ -52,9 +52,15 @@
     - chrony_setup
     - chrony_install
 
+- name: Chrony | upgrade | Upgrade Chrony package
+  ansible.builtin.import_tasks: upgrade.yml
+  when: chrony_role_action == 'upgrade'
+  tags:
+    - chrony_upgrade
+
 - name: Chrony | configure | Configure Chrony service
   ansible.builtin.import_tasks: configure.yml
-  when: chrony_role_action in ['all', 'configure']
+  when: chrony_role_action in ['all', 'configure', 'upgrade']
   tags:
     - chrony_setup
     - chrony_configure
@@ -67,12 +73,6 @@
   tags:
     - chrony_config
     - chrony_logrotate
-
-- name: Chrony | upgrade | Upgrade Chrony package
-  ansible.builtin.import_tasks: upgrade.yml
-  when: chrony_role_action in ['upgrade']
-  tags:
-    - chrony_upgrade
 
 - name: Chrony | test | Verify time synchronization
   ansible.builtin.import_tasks: test.yml
