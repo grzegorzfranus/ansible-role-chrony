@@ -51,6 +51,9 @@
           # Debian uses Type=notify, RHEL uses Type=forking — both conflict
           # with chronyd -n (foreground mode). Type=simple works universally.
           Type=simple
+          # Unset NOTIFY_SOCKET so chronyd 4.8+ doesn't attempt to send readiness notifications
+          # to an inactive systemd notification socket when Type=simple is used in containers.
+          UnsetEnvironment=NOTIFY_SOCKET
           # Run chronyd in foreground (-n) free-running mode (-x) inside Molecule
           # containers. -n keeps chronyd in foreground (matches Type=simple).
           # -x avoids adjusting system clock (no CAP_SYS_TIME needed).
