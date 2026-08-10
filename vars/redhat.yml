@@ -46,9 +46,12 @@ __chrony_confdir_path: "/etc/chrony.d"
 # Valid values: package name string, or empty string when no extra package applies
 __chrony_tzdata_legacy_package: ""
 
-# Directories the packaged systemd unit already grants write access to, via
-# LogsDirectory= and StateDirectory=. Paths configured outside of these require an
-# explicit ReadWritePaths= grant, otherwise ProtectSystem= blocks chronyd from writing.
+# Directories every supported distribution already allows chronyd to write to — either
+# through LogsDirectory=/StateDirectory= in the packaged unit (Debian 12+, Ubuntu 24.04+),
+# or because the unit's ProtectSystem= level does not cover /var (EL9, Debian 11) or grants
+# /var/log explicitly (Ubuntu 22.04). Paths configured outside of these need an explicit
+# ReadWritePaths= grant. Kept deliberately conservative: a redundant grant is harmless,
+# a missing one crashes chronyd on startup.
 # Valid values: list of absolute path strings
 __chrony_unit_writable_paths:
   - "/var/log/chrony"
