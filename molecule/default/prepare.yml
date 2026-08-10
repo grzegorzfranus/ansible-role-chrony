@@ -51,8 +51,10 @@
           # Debian uses Type=notify, RHEL uses Type=forking — both conflict
           # with chronyd -n (foreground mode). Type=simple works universally.
           Type=simple
-          # Unset NOTIFY_SOCKET so chronyd 4.8+ doesn't attempt to send readiness notifications
-          # to an inactive systemd notification socket when Type=simple is used in containers.
+          # Unset NOTIFY_SOCKET as a defensive measure: with Type=simple systemd should not pass it,
+          # but chronyd attempts sd_notify whenever the variable is present in the environment.
+          # Observed on ubuntu2604: chronyd[1956]: Fatal error : Could not send notification to $NOTIFY_SOCKET.
+          # Harmless on distros where it is already unset.
           UnsetEnvironment=NOTIFY_SOCKET
           # Run chronyd in foreground (-n) free-running mode (-x) inside Molecule
           # containers. -n keeps chronyd in foreground (matches Type=simple).
