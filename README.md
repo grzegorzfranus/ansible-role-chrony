@@ -550,7 +550,7 @@ ansible-lint
 molecule test --all
 ```
 
-Centralized workflows from [github-workflows](https://github.com/grzegorzfranus/github-workflows) version `v3.0.1` run these checks automatically on PR creation.
+Centralized workflows from [github-workflows](https://github.com/grzegorzfranus/github-workflows) (branch `@main`) run these checks automatically on PR creation.
 
 ## 📝 License
 
