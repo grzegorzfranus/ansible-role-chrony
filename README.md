@@ -410,9 +410,9 @@ All tags (except `always`) are prefixed with `chrony_` to avoid collisions. Use 
 
 ## CI/CD Pipeline
 
-This repository uses centralized, reusable GitHub Actions workflows from [grzegorzfranus/github-workflows](https://github.com/grzegorzfranus/github-workflows) (`v3.0.1`) for quality assurance, security scanning, and release automation.
+This repository uses centralized, reusable GitHub Actions workflows from [grzegorzfranus/github-workflows](https://github.com/grzegorzfranus/github-workflows) (`@main`) for quality assurance, security scanning, and release automation.
 
-### CI Pipeline (`ansible-ci.yml@v3.0.1`)
+### CI Pipeline (`ansible-ci.yml@main`)
 
 Runs on every Pull Request in a two-tier gate pattern:
 
@@ -425,14 +425,14 @@ Runs on every Pull Request in a two-tier gate pattern:
 7. **Molecule Integration Tests** — executes Molecule test matrix across Ubuntu 26.04, Ubuntu 24.04, Ubuntu 22.04, Debian 13, Debian 12, Debian 11, and Rocky Linux 9 (`ansible-molecule.yml`)
 8. **Merge Check Gate** — single authoritative status check aggregating all results for branch protection
 
-### Release & Publish Pipeline (`ansible-publish.yml@v3.0.1`)
+### Release & Publish Pipeline (`ansible-publish.yml@main`)
 
 Automated via [Release Please](https://github.com/googleapis/release-please):
 
 1. **Push to `main`** → Release Please creates or updates a Release PR with automated changelog generation
 2. **Release PR Validation** → validates YAML syntax and actions schema before setting `Merge Check` status
 3. **Merge Release PR** → creates Git version tag and GitHub Release automatically
-4. **Ansible Galaxy Publish** → publishes tagged release to Ansible Galaxy via `ansible-publish.yml@v3.0.1` with exponential backoff retry logic
+4. **Ansible Galaxy Publish** → publishes tagged release to Ansible Galaxy via `ansible-publish.yml@main` with exponential backoff retry logic
 
 ## Example Playbooks
 
