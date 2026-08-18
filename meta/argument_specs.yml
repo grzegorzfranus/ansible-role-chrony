@@ -221,6 +221,10 @@ argument_specs:
             description: Add date extension to rotated logs.
             type: bool
             default: true
+          dateformat:
+            description: Date suffix appended to rotated log filenames when dateext is enabled.
+            type: str
+            default: ".%Y-%m-%d"
       chrony_rtc_settings:
         description: Real-Time Clock configuration dictionary.
         type: dict

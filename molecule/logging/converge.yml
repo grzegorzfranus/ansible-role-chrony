@@ -34,4 +34,5 @@
           nocreate: false
           copytruncate: true
           dateext: true
+          dateformat: "-%Y%m%d"
           archive_directory_path: "/var/log/chrony-test/archive"
