@@ -5,6 +5,13 @@ All notable changes to this Chrony NTP role will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0](https://github.com/grzegorzfranus/ansible-role-chrony/compare/v2.4.15...v2.5.0) (2026-08-18)
+
+
+### Features
+
+* **logrotate:** make dateformat configurable ([#63](https://github.com/grzegorzfranus/ansible-role-chrony/issues/63)) ([78b102d](https://github.com/grzegorzfranus/ansible-role-chrony/commit/78b102debf8d2224b9ee069428a860788003c1a1))
+
 ## [2.4.15](https://github.com/grzegorzfranus/ansible-role-chrony/compare/v2.4.14...v2.4.15) (2026-08-13)
 
 
