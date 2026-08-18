@@ -43,6 +43,20 @@
           - __verify_logrotate_file.stat.gr_name == 'root'
           - __verify_logrotate_file.stat.mode == '0644'
 
+    - name: Verify | Slurp rendered logrotate configuration
+      become: true
+      ansible.builtin.slurp:
+        src: "/etc/logrotate.d/chrony"
+      register: __verify_logrotate_slurp
+
+    - name: Verify | Assert rendered dateformat directive
+      ansible.builtin.assert:
+        that:
+          - "'dateext' in (__verify_logrotate_slurp.content | b64decode)"
+          - "'dateformat -%Y%m%d' in (__verify_logrotate_slurp.content | b64decode)"
+        fail_msg: "Rendered logrotate configuration does not contain the expected dateformat directive"
+        success_msg: "Rendered logrotate configuration contains the expected dateformat directive"
+
     - name: Verify | Validate logrotate dry-run execution
       ansible.builtin.command:
         cmd: "logrotate -d /etc/logrotate.d/chrony"

@@ -309,7 +309,10 @@
       - chrony_logrotate_options.nocreate is boolean
       - chrony_logrotate_options.copytruncate is boolean
       - chrony_logrotate_options.dateext is boolean
-    fail_msg: "Invalid chrony_logrotate_options"
+      - chrony_logrotate_options.dateformat is not defined or
+        (chrony_logrotate_options.dateformat is string and
+         chrony_logrotate_options.dateformat | length > 0)
+    fail_msg: "Invalid chrony_logrotate_options (dateformat must be a non-empty string when provided)"
     success_msg: "Remaining logrotate options are valid"
   when: chrony_configure_logrotate | default(false) | bool
 

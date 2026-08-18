@@ -179,7 +179,7 @@ chrony_maxdistance: 3.0
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `chrony_logrotate_options` | Dictionary of logrotate settings (`archive_directory_path`, `frequency`, `count`, `missingok`, `compress`, `nocreate`, `copytruncate`, `dateext`) | *See defaults/main.yml* |
+| `chrony_logrotate_options` | Dictionary of logrotate settings (`archive_directory_path`, `frequency`, `count`, `missingok`, `compress`, `nocreate`, `copytruncate`, `dateext`, `dateformat`) | *See defaults/main.yml* |
 
 ### Real-Time Clock (RTC) Settings
 

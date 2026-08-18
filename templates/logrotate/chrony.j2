@@ -20,7 +20,7 @@
     {% endif %}
     {% if chrony_logrotate_options.dateext | bool %}
     dateext
-    dateformat .%Y-%m-%d
+    dateformat {{ chrony_logrotate_options.dateformat | default('.%Y-%m-%d') }}
     {% endif %}
     {% if chrony_logrotate_options.archive_directory_path is defined and chrony_logrotate_options.archive_directory_path | length > 0 %}
     olddir {{ chrony_logrotate_options.archive_directory_path }}

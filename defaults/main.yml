@@ -177,7 +177,7 @@ chrony_logchange: "0.5"
 
 # Logrotate configuration options for managing chrony log retention
 # Valid values: dictionary with keys archive_directory_path (str), frequency (enum),
-#   count (int > 0), missingok (bool), compress (bool), nocreate (bool), copytruncate (bool), dateext (bool)
+#   count (int > 0), missingok (bool), compress (bool), nocreate (bool), copytruncate (bool), dateext (bool), dateformat (str)
 chrony_logrotate_options:
   archive_directory_path: "/var/log/chrony/archive"
   frequency: "daily"
@@ -187,6 +187,7 @@ chrony_logrotate_options:
   nocreate: true
   copytruncate: false
   dateext: true
+  dateformat: ".%Y-%m-%d"
 
 # -----------------------------------------------------------------------------
 # 7. Real Time Clock (RTC) Settings
