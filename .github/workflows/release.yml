@@ -1,4 +1,21 @@
 ---
+# ==============================================================================
+# Workflow: Release
+# ==============================================================================
+# Purpose:
+#   Runs Release Please on every push to main to open or update the release
+#   pull request and to tag releases. When a release pull request is created
+#   or updated, it validates the release branch, sets the Merge Check Gate
+#   commit status on that pull request and deletes the CI runs GitHub holds
+#   for approval there: pull_request runs of a pull request opened or updated
+#   with GITHUB_TOKEN wait for an approval and fail once it is merged. When a
+#   release is created, it publishes the role to Ansible Galaxy through
+#   ansible-publish.yml.
+#
+# Triggers:
+#   push: the main branch
+# ==============================================================================
+
 name: "Release"
 run-name: "Release: ${{ github.ref_name }} by @${{ github.actor }}"
 
@@ -8,6 +25,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   # ================================================================
@@ -40,8 +61,9 @@ jobs:
   # ----------------------------------------------------------------
   # Runs CI checks on the Release PR branch and sets the required
   # "Merge Check" commit status via the GitHub API. This is needed
-  # because PRs created by GITHUB_TOKEN do not trigger pull_request
-  # events in other workflows.
+  # because the pull_request runs of PRs created or updated with
+  # GITHUB_TOKEN wait for an approval instead of running. Those
+  # runs are deleted, so they do not fail once the PR is merged.
   # ================================================================
   validate-release-pr:
     name: "🔍 Validate Release PR"
@@ -50,6 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
+      actions: write
       contents: read
       statuses: write
       pull-requests: read
@@ -58,8 +81,9 @@ jobs:
         id: pr
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
         run: |
-          REPO="${{ github.repository }}"
+          REPO="$GH_REPOSITORY"
           PR_NUMBER=$(gh pr list \
             --repo "$REPO" \
             --head "release-please--branches--main" \
@@ -73,13 +97,13 @@ jobs:
           echo "sha=$PR_SHA" >> "$GITHUB_OUTPUT"
 
       - name: "🔍 Checkout Release PR Branch"
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd  # v5.0.1
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
         with:
           ref: release-please--branches--main
           persist-credentials: false
 
       - name: "🔍 Validate YAML Syntax"
-        run: pipx run yamllint .
+        run: pipx run yamllint==1.38.0 .
 
       - name: "🔍 Validate GitHub Actions"
         uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7  # v2.2.0
@@ -115,12 +139,54 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_SHA: ${{ steps.pr.outputs.sha }}
+          GH_REPOSITORY: ${{ github.repository }}
         run: |
-          gh api "repos/${{ github.repository }}/statuses/$PR_SHA" \
+          gh api "repos/$GH_REPOSITORY/statuses/$PR_SHA" \
             -f state=success \
             -f context="Merge Check Gate" \
             -f description="All validations passed (Release PR)"
           echo "Set 'Merge Check' status on commit $PR_SHA"
+
+      - name: "❌ Publish Merge Check Failure Status"
+        if: failure() && steps.pr.outputs.sha != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+          PR_SHA: ${{ steps.pr.outputs.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api "repos/$GH_REPOSITORY/statuses/$PR_SHA" \
+            -f state=failure \
+            -f context="Merge Check Gate" \
+            -f description="Release PR validation failed. See the linked Actions run." \
+            -f target_url="$RUN_URL"
+          echo "Set failing 'Merge Check' status on commit $PR_SHA"
+
+      - name: "🧹 Delete Approval-Required CI Runs"
+        if: always() && steps.pr.outputs.sha != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+          PR_SHA: ${{ steps.pr.outputs.sha }}
+        run: |
+          # GitHub starts the pull_request runs of a pull request opened or
+          # updated with GITHUB_TOKEN in an approval-required state. Nobody
+          # approves them, so they fail once the release PR is merged; the
+          # Merge Check Gate status set above replaces them.
+          API="repos/$GH_REPOSITORY/actions/runs?branch=release-please--branches--main&event=pull_request&status=action_required"
+          for attempt in $(seq 1 12); do
+            if gh api "$API" --jq ".workflow_runs[] | select(.head_sha == \"$PR_SHA\") | .id" | grep -q .; then
+              break
+            fi
+            echo "No approval-required run for $PR_SHA yet (attempt $attempt/12)"
+            sleep 5
+          done
+          RUN_IDS=$(gh api "$API" --jq '.workflow_runs[].id')
+          for RUN_ID in $RUN_IDS; do
+            gh api --method DELETE "repos/$GH_REPOSITORY/actions/runs/$RUN_ID"
+            echo "Deleted approval-required run $RUN_ID"
+          done
 
   # ================================================================
   # 3. PUBLISH TO ANSIBLE GALAXY

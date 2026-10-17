@@ -1,4 +1,18 @@
 ---
+# ==============================================================================
+# Workflow: CI
+# ==============================================================================
+# Purpose:
+#   Quality gate of this role. Validates the branch name and the pull request
+#   title, lints the workflow files (util-workflow-lint.yml), runs the shared
+#   Ansible CI (ansible-ci.yml: lint, metadata, security, SBOM, Molecule) and
+#   aggregates the results in the Merge Check Gate job required by the
+#   repository ruleset.
+#
+# Triggers:
+#   pull_request: every pull request
+# ==============================================================================
+
 name: "CI"
 run-name: "CI: ${{ github.event.pull_request.title || github.ref_name }} by @${{ github.actor }}"
 
@@ -143,7 +157,21 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ================================================================
-  # 2. CI PIPELINE (Reusable Workflow)
+  # 2. WORKFLOW LINT (Reusable Workflow)
+  # ----------------------------------------------------------------
+  # Lints the workflow files with yamllint, actionlint and zizmor
+  # (util-workflow-lint.yml). An empty paths input runs it on every
+  # pull request.
+  # ================================================================
+  workflow-lint:
+    name: "🔍 Lint Workflows"
+    needs: [branch-name-lint, pr-title-lint]
+    uses: grzegorzfranus/github-workflows/.github/workflows/util-workflow-lint.yml@main
+    with:
+      paths: ""
+
+  # ================================================================
+  # 3. CI PIPELINE (Reusable Workflow)
   # ----------------------------------------------------------------
   # Calls the centralized Ansible CI workflow which includes:
   # YAML lint, Ansible lint, TruffleHog security scan, Molecule
@@ -157,16 +185,16 @@ jobs:
       molecule-scenarios: '["default", "logging"]'
 
   # ================================================================
-  # 3. MERGE CHECK — Caller-level gate for branch protection
+  # 4. MERGE CHECK — Caller-level gate for branch protection
   # ----------------------------------------------------------------
-  # Aggregates branch name lint + reusable CI results into a
+  # Aggregates the lint jobs + reusable CI results into a
   # single authoritative status check. Branch protection should
   # point to THIS merge-check, not the reusable workflow's internal
   # one. This implements the two-tier gate pattern.
   # ================================================================
   merge-check:
     name: "Merge Check Gate"
-    needs: [branch-name-lint, pr-title-lint, ci]
+    needs: [branch-name-lint, pr-title-lint, workflow-lint, ci]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -177,10 +205,12 @@ jobs:
         env:
           BRANCH_NAME_LINT_RESULT: ${{ needs.branch-name-lint.result }}
           PR_TITLE_LINT_RESULT: ${{ needs.pr-title-lint.result }}
+          WORKFLOW_LINT_RESULT: ${{ needs.workflow-lint.result }}
           CI_RESULT: ${{ needs.ci.result }}
         run: |
           echo "Branch Name Lint: $BRANCH_NAME_LINT_RESULT"
           echo "PR Title Lint:    $PR_TITLE_LINT_RESULT"
+          echo "Workflow Lint:    $WORKFLOW_LINT_RESULT"
           echo "CI:               $CI_RESULT"
 
           has_failures=0
@@ -192,6 +222,11 @@ jobs:
 
           if [[ "$PR_TITLE_LINT_RESULT" == "failure" || "$PR_TITLE_LINT_RESULT" == "cancelled" ]]; then
             echo "::error::PR Title Validation failed or was cancelled"
+            has_failures=1
+          fi
+
+          if [[ "$WORKFLOW_LINT_RESULT" == "failure" || "$WORKFLOW_LINT_RESULT" == "cancelled" ]]; then
+            echo "::error::Workflow Lint failed or was cancelled"
             has_failures=1
           fi
 
