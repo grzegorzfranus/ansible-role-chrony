@@ -96,6 +96,36 @@ jobs:
           echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "sha=$PR_SHA" >> "$GITHUB_OUTPUT"
 
+      - name: "🧹 Delete Approval-Required CI Runs"
+        if: steps.pr.outputs.sha != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+          PR_SHA: ${{ steps.pr.outputs.sha }}
+        run: |
+          # GitHub starts the pull_request runs of a pull request opened or
+          # updated with GITHUB_TOKEN in an approval-required state. Nobody
+          # approves them, so they fail once the release PR is merged; the
+          # Merge Check Gate status replaces them. This step runs before that
+          # status is published, so the release PR cannot be merged while the
+          # run still exists, and it deletes the runs of the release PR head
+          # in any status, including runs that have already expired.
+          API="repos/$GH_REPOSITORY/actions/runs?branch=release-please--branches--main&event=pull_request&head_sha=$PR_SHA"
+          RUN_IDS=""
+          for attempt in $(seq 1 12); do
+            RUN_IDS=$(gh api "$API" --jq '.workflow_runs[].id')
+            if [[ -n "$RUN_IDS" ]]; then
+              break
+            fi
+            echo "No pull_request run for $PR_SHA yet (attempt $attempt/12)"
+            sleep 5
+          done
+          for RUN_ID in $RUN_IDS; do
+            gh api --method DELETE "repos/$GH_REPOSITORY/actions/runs/$RUN_ID"
+            echo "Deleted approval-required run $RUN_ID"
+          done
+
       - name: "🔍 Checkout Release PR Branch"
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
         with:
@@ -161,27 +191,6 @@ jobs:
             -f description="Release PR validation failed. See the linked Actions run." \
             -f target_url="$RUN_URL"
           echo "Set failing 'Merge Check' status on commit $PR_SHA"
-
-      - name: "🧹 Delete Approval-Required CI Runs"
-        if: always() && steps.pr.outputs.sha != ''
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPOSITORY: ${{ github.repository }}
-          PR_SHA: ${{ steps.pr.outputs.sha }}
-        run: |
-          # GitHub starts the pull_request runs of a pull request opened or
-          # updated with GITHUB_TOKEN in an approval-required state. Nobody
-          # approves them, so they fail once the release PR is merged; the
-          # Merge Check Gate status set above replaces them.
-          API="repos/$GH_REPOSITORY/actions/runs?branch=release-please--branches--main&event=pull_request&status=action_required"
-          for attempt in $(seq 1 12); do
-            if gh api "$API" --jq ".workflow_runs[] | select(.head_sha == \"$PR_SHA\") | .id" | grep -q .; then
-              break
-            fi
-            echo "No approval-required run for $PR_SHA yet (attempt $attempt/12)"
-            sleep 5
-          done
           RUN_IDS=$(gh api "$API" --jq '.workflow_runs[].id')
           for RUN_ID in $RUN_IDS; do
             gh api --method DELETE "repos/$GH_REPOSITORY/actions/runs/$RUN_ID"
